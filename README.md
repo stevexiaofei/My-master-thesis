@@ -1,54 +1,9 @@
 # 上海交通大学学位论文模板
+这是我根据上海交通大学学位论文模板,结合电院微纳电子学系的论文格式要求修改而成的latex硕士论文模板。主要修改如下：
+ + 页眉加入双装饰线，页脚也做了相应的修改
+ + 页眉上的字居中并改为‘上海交通大学硕士学位论文’
+ + 论文的第一页和第二页做了相应的修改
 
-[![Build Status](https://travis-ci.org/sjtug/SJTUThesis.svg?branch=master)](https://travis-ci.org/sjtug/SJTUThesis)
-[![Build status](https://ci.appveyor.com/api/projects/status/9026p23k53dt2607/branch/master?svg=true)](https://ci.appveyor.com/project/SJTUG/sjtuthesis/branch/master)
-[![GitHub Release](https://img.shields.io/github/release/sjtug/SJTUThesis.svg)](https://github.com/sjtug/SJTUThesis/releases)
-[![GitHub Release Date](https://img.shields.io/github/release-date/sjtug/SJTUThesis.svg)](https://github.com/sjtug/SJTUThesis/releases)
-[![Join the chat at https://gitter.im/sjtug/SJTUThesis](https://badges.gitter.im/sjtug/SJTUThesis.svg)](https://gitter.im/sjtug/SJTUThesis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-这是为撰写上海交通大学学士、硕士或博士论文而准备的 XeLaTeX 模板，非官方出品。生成的学位论文文件参见 [README.pdf][README]，详细使用说明参见 [SJTUThesis Wiki](https://github.com/sjtug/SJTUThesis/wiki)。
-
-## 封面展示
-
-<div align="center">
-    <a href="http://sjtug.org/SJTUThesis/bachelor.pdf"><img src="./docs/images/bachelor.png" height="330"></a>
-    <a href="http://sjtug.org/SJTUThesis/master.pdf"><img src="./docs/images/master.png" height="330"></a>
-    <a href="http://sjtug.org/SJTUThesis/doctor.pdf"><img src="./docs/images/doctor.png" height="330"></a>
-</div>
-
-
-## 如何使用
-
-SJTUThesis 共有三种编译方式支持:
-
-* [本地编译](#本地编译)
-* [在 ShareLaTeX 网站上进行在线编译](#sharelatex-在线编译)
-* [在 Docker 容器中编译](#使用-docker-编译)
-
-第一种编译方式需要在本地安装 TeX 发行版，好处在于环境问题少，坏处在于安装过程比较漫长且繁琐。第二种编译方式是完全在线的，不需要在本地安装任何环境，缺点在于需要完全依赖 ShareLaTeX 网站，其在国内的稳定性存疑。第三种方式需要在本地安装 Docker，相比第一种，不会污染本地的环境。但要求用户对 Docker 有一定了解。
-
-### 本地编译
-
-因为本地编译涉及到 TeX 发行版的安装, 因此具体可参见 [本地安装使用指南](https://github.com/sjtug/SJTUThesis/wiki/%E6%9C%AC%E5%9C%B0%E5%AE%89%E8%A3%85%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E)
-
-### ShareLaTeX 在线编译
-
-[![](https://img.shields.io/badge/ShareLaTeX-v0.10-green.svg)](https://www.sharelatex.com/templates/5a54637e8cd4f9d91b6b6416)
-[![](https://img.shields.io/badge/ShareLaTeX-v0.9.5-yellow.svg)](https://www.sharelatex.com/templates/588163ec93a02abc513710fd)
-[![](https://img.shields.io/badge/ShareLaTeX-v0.8-yellow.svg)](https://www.sharelatex.com/templates/566ea0fb08f4ac510fbc6b9e)
-
-我们有多个版本的模板在 ShareLaTeX 上可用，但是推荐使用最新版本，以避免可能遇到的一些问题。此外如果在 ShareLaTeX 上遇到问题建议尝试本地编译。
-
-### 使用 Docker 编译
-
-[![Docker Repository on Quay](https://quay.io/repository/sjtug/sjtuthesis/status "Docker Repository on Quay")](https://quay.io/repository/sjtug/sjtuthesis)
-
-在模板目录下执行以下命令即可:
-
-```shell
-docker pull quay.io/sjtug/sjtuthesis
-./scripts/start-build.sh
-```
 
 ## Makefile 使用
 
