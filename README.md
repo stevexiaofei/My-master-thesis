@@ -122,3 +122,4 @@ SJTUThesis 是一个由诸多感兴趣的同学一起维护的开源项目，我
 
 [README]: http://sjtug.org/SJTUThesis/README.pdf
 [0.9.5]: https://github.com/sjtug/SJTUThesis/releases/tag/0.9.5
+
