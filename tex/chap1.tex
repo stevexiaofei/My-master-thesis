@@ -1,0 +1,86 @@
+%# -*- coding: utf-8-unix -*-
+%%==================================================
+%% chapter01.tex for SJTU Master Thesis
+%%==================================================
+
+\chapter{绪论}
+\label{chap:intro}
+
+\section{论文研究的背景及意义}
+\label{sec:intro:analog}
+介绍线虫的生物学特性(体长，性别等)，线虫的应用领域及优势。微流控芯片研究线虫的优势，
+机器视觉在生物医疗图像处理中的应用。
+\section{国内外研究现状}
+\label{sec:intro:analog}
+
+\subsection{微流控芯片在秀丽隐杆线虫研究中的应用}
+\label{sec:intro:analog}
+
+\subsubsection{线虫的固定与成像}
+\label{sec:intro:analog}
+	按照以下角度综述。
+	\begin{itemize}
+	  \item 通过PDMS膜形变将线虫限制在一个通道里文献。
+	  \item 通过二氧化碳扩散的方式麻醉线虫文献。
+	  \item 锥形通道固定线虫文献。
+	  \item 最后对幼虫和线虫胚胎的固定文献。
+	\end{itemize}
+\subsubsection{线虫的分选}
+\label{sec:intro:analog}
+	线虫的筛选往往是基于某种表型，如尺寸、趋电性、趋化性、运动能力、电生理学特性等。
+	可从以下角度分类。
+	\begin{itemize}
+	  \item 有许多文献基于线虫的大小从而对幼虫和成虫进行分选。
+	  \item 线虫的趋电性的不同导致线虫向不同的电极靠近从而达到分选的目的，文献若干。
+	  \item 基于神经元活动和电生理特性的筛选。
+	  \item 区别于物理固定和可逆凝胶固定线虫，研究者提出了一种将液滴捕获用于线虫的分选。
+	\end{itemize}
+\subsubsection{线虫行为实验}
+\label{sec:intro:analog}
+	目前已经有学者研究过的行为包括：线虫的机械感受器、渗透逃避、趋化性、趋电性、觅食反应
+热反应、产软行为、繁殖行为等。
+	\begin{itemize}
+	  \item 线虫的机械感受：如测量线虫肌肉的力度。
+	  \item 趋化性，如很多梯度芯片被提出用于相关的研究
+	  \item 探讨线虫在拥挤环境下的行为反应
+	  \item 趋电性行为，虫子在电场的来回切换下来回运动有助于延长线虫寿命。
+	\end{itemize}
+\subsubsection{药物筛选与毒理实验}
+\label{sec:intro:analog}
+	很多的线虫芯片被开发，用于药物识别，筛选、以及研究毒性对线虫行为、生理电信号衰老。抗菌和代谢
+活动身体毒性的影响。
+	\begin{itemize}
+	  \item 多种复合药物浓度梯度的药物筛选。
+	  \item 将线虫暴露在细菌病原体环境中。
+	  \item 将线虫暴露在重金属环境中
+	\end{itemize}
+
+\subsection{机器视觉在秀丽隐杆线虫研究中的应用}
+\label{sec:intro:analog}
+
+\subsubsection{游动线虫的轮廓分割与跟踪}
+\label{sec:intro:analog}
+
+\subsubsection{爬行线虫的轮廓分割与跟踪}
+\label{sec:intro:analog}
+
+\subsubsection{线虫特征的提取}
+\label{sec:intro:analog}
+
+\section{存在的问题}
+\label{sec:intro:analog}
+	\begin{itemize}
+	  \item 片上梯度的形成
+	  \item 游动线虫轮廓的分割
+	  \item 一个集成微流控芯片和多线虫实时图像处理的平台还报道的比较少
+	\end{itemize}
+\section{研究内容}
+\label{sec:intro:org}
+	\begin{itemize}
+	  \item 首先搭建了一个基于微流控芯片的硬件平台
+	  \item 设计了一款及线虫轮廓分割、跟踪及特征提取等功能的自动化图像处理软件。
+	  并针对线虫分割的鲁棒性与实时性的要求，还提出了一种基于深度学习的线虫轮廓分割的网络。
+	  \item 在搭建的硬件平台上，并通过双氧水实验验证 系统的优势。
+	\end{itemize}
+\section{论文章节安排}
+\label{sec:intro:org}
