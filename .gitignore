@@ -1,5 +1,7 @@
 # See https://github.com/github/gitignore/blob/master/TeX.gitignore
 ## Core latex/pdflatex auxiliary files:
+明审论文最终版.pdf
+转化医学交叉研究基金LY_3doc (1).pdf
 *.aux
 *.lof
 *.log
