@@ -47,8 +47,9 @@
 		p(\vec{x}|h_T,BG) \sim \sum_{m=1}^{B} \hat{\pi}_{m}N(\vec{x};\hat{u}_m,\hat{\sigma}_m^2I)\label{eq:bg}
 	\end{equation}
 	如图\ref{fig:bgsub}所示基于混合高斯
-	模型的背景减除方法与简单的帧间差分法相比，背景减除的方法能够显著的减少前景轮廓提取的不连续分割的性能
-	更好。用一个$5\times5$的核对提取到的前景轮廓进行形态学闭运算得到的结果如图\ref{fig:bgsub:close}所示。
+	模型的背景减除方法与简单的帧间差分法相比，背景减除的方法能够显著的减少前景轮廓提取的不连续且分割的性能
+	更好。用一个$5\times5$的核对提取到的前景轮廓进行形态学闭运算得到的结果如图\ref{fig:bgsub:close}所示，形态学
+	闭运算用于连接线虫轮廓的断裂。
 	最后，运用OTSU二值化算法就可以得到最终的线虫前景轮廓如图\ref{fig:bgsub:bin}所示。
 
 	
@@ -115,6 +116,14 @@
                 \end{matrix}
                 \right]\label{eq:matrix}
     \end{equation}
+	\begin{figure}[t]
+	  \centering
+	  \includegraphics[width=9cm]{figure/chap3/track.jpg}
+	  \bicaption[这里将出现在插图索引中]
+		{跟踪的结果}
+		{The tracking result}
+	  \label{fig:track}
+	\end{figure}
 	矩阵中$d_{ij}$表示当前帧中的第i个轮廓的重心到上一帧中第j个轮廓的重心之间的距离。通过
 	公式\ref{eq:min}可以得到相邻两帧图像中线虫轮廓之间的对应关系。即如果相邻两帧图像中两个
 	轮廓重心之间的距离最短，则可以认为是同一个线虫。
@@ -124,7 +133,7 @@
 	但事实上由于轮廓分割的不完美以及图像噪声的影响
 	，这一策略往往会失效。因此，通过最近邻搜索的方式来实现线虫的跟踪要满足以下的约束条件，当这两个
 	条件之一不满足时，则认为跟踪丢失，此时应该分配一个新的trackID给当前的轮廓。算法\ref{algo:worm_track}
-	是描述了线虫跟踪算法的实现思路。
+	是描述了线虫跟踪算法的实现思路。图\ref{fig:track}表示跟踪的结果。
 	
 	\begin{itemize}
 	  \item 相邻两帧图像中同一只线虫的轮廓面积的相对变化应该小于一个阈值。
@@ -158,12 +167,12 @@
 		\For{$frame_index = 1 \to Worm\_Data.length-1$}
 			\State $PreFrame\_WormData \gets Worm\_Data[frame_index-1] $
 			\For{$worm\_index =0 \to Worm\_Data[frame_index].length-1$}
-\algstore{WormTracking}
-\end{algorithmic}
-\end{algorithm}
-\begin{algorithm}[H]
-\begin{algorithmic}[1]
-\algrestore{WormTracking}
+% \algstore{WormTracking}
+% \end{algorithmic}
+% \end{algorithm}
+% \begin{algorithm}[H]
+% \begin{algorithmic}[1]
+% \algrestore{WormTracking}
 		
 				\State $cur\_worm \gets Worm\_Data[frame\_index][worm\_index]$
 				\State $dist\_array \gets Compute\_distance(cur\_worm,PreFrame\_WormData)$
@@ -180,9 +189,86 @@
 \end{algorithmic}
 \end{algorithm}
 \section{线虫的特征提取}
+	线虫从头部到尾部两边近似等距的分布着23-24块肌肉，其头部和尾部各占其总长度的$1/6$。因此线虫
+	身体的自由度为24。当用轮廓来描述线虫的形态时，在其轮廓上采样49个点足以描述线虫所有形态。
+	当对线虫进行特征计算时(如：计算线虫摆动频率和运动速度等)，通常是利用线虫轮廓中间的脊线进行计算。
+	因此需要提取线虫轮廓的中线然后采样24个点用于特征计算。下面将首先对线虫轮廓中间脊线提取算法进行介绍，
+	然后介绍线虫摆动频率的估计以及运动速度的计算。
 \subsection{线虫轮廓中间脊线提取}
+	在得到线虫的轮廓后，将轮廓上的坐标按顺时针排列即可得到一个坐标点的循环列表。将轮廓周长的$1/48$作为一个单位边，
+	在轮廓上的任意一点其两边都可以找到一个单位边长度的相邻点，这三点所成角的补角的倒数与该点的曲率成正比，因此
+	可以用于近似曲率的计算。由于其头部和尾部的变换往往比身体的其他部分要尖锐，所以如果将像素索引作为横坐标曲率作为
+	纵坐标，则这条曲线上将会出现两个波峰如图\ref{fig:qulv}所示，分别对应线虫的头部和尾部。由此便可定位到线虫的头部和尾部，另外线虫的头部
+	曲率一般小于尾部的曲率，两个波峰中比较低的波峰对应的横坐标为线虫头部的坐标，另一个波峰对应线虫尾部的坐标。
+	线虫头部和尾部将线虫轮廓分为两边。在其中一条边上找到所有距离另一条边最近的对应点。两条边上两对应点的中点构成线虫的
+	中间脊线，线虫轮廓中间脊线的长度定义为线虫的体长。
+	\begin{figure}[h]
+	  \centering
+	  \includegraphics[width=14cm]{figure/chap3/qulv.jpg}
+	  % \hspace{1cm}
+	  % \includegraphics[width=4cm]{example/sjtulogo.jpg}
+	  \bicaption[这里将出现在插图索引中]
+		{轮廓曲率的变化}
+		{Change in contour curvature}
+	  \label{fig:qulv}
+	\end{figure}
+\subsection{身体弯曲角度的计算以及摆动频率的估计}
+	在很多毒理实验中，线虫的摆动频率经常作为一个重要的生理指标用于表征线虫的活跃程度\cite{Wang2008Assessment}。
+	为了计算线虫的摆动频率， 我们定义一个衡量身体弯曲程度的夹角，由线虫头部、尾部和轮廓脊线的中点三点所成角定义为
+	身体弯曲角。线虫在爬行和游动的过程中，身体弯曲角会在$180^\circ$C左右振荡如图\ref{fig:angle}，振荡的频率定义为
+	线虫摆动的频率。在时刻$t_0$,对区间$(t_0-\Delta t,t_0+\Delta t)$中弯曲角信号做FFT变换，假设其幅度最大值对应的横坐标
+	为n，则线虫在$t$时刻的瞬时摆动频率由公式\ref{eq:freq}得出，图\ref{fig:freq}表示线虫摆动频率随时间的变换。
+	\begin{equation}
+        f=\frac{frame\_rate*n}{2*\Delta t} \label{eq:freq}
+		\end{equation}
+		
+ % \begin{figure}[th]
+  % \centering
+  % \begin{subfigure}{0.5\textwidth}
+    % \centering
+    % \includegraphics[width=5cm]{figure/chap3/angle.jpg}
+    % \caption{弯曲角的变化}\label{fig:angle}
+  % \end{subfigure}
+  % \hspace{4em}
+  % \begin{subfigure}{0.5\textwidth}
+    % \centering
+    % \includegraphics[width=5cm]{figure/chap3/freq.jpg}
+    % \caption{摆动频率的变化}\label{fig:freq}
+  % \end{subfigure}
+  % \bicaption{线虫弯曲角度和摆动频率的变换}{The images in the foreground object extraction}
+  % \label{fig:bgsub}
+% \end{figure}
+% \begin{figure}[!htp]
+  % \centering
+  % \subcaptionbox{弯曲角的变化\label{fig:angle}}%标题的长度，超过则会换行，如下一个小图。
+    % {\centering
+	% \includegraphics[height=5cm]{figure/chap3/angle.jpg}}
+  % \hspace{3em}
+  % \subcaptionbox{摆动频率的变化\label{fig:freq}}
+    % {\includegraphics[height=5cm]{figure/chap3/freq.jpg}}
+  % \bicaption{线虫弯曲角度和摆动频率的变换}{An EPS and PDF demo with subcaptionbox}
+  % \label{fig:pdfeps-subcaptionbox}
+% \end{figure}
+\begin{figure}[!htp]    
+\begin{minipage}[t]{0.5\linewidth}%设定图片下字的宽度，在此基础尽量满足图片的长宽    
+	\centering    
+	\includegraphics[width=1\linewidth]{figure/chap3/angle.jpg}    
+	\caption*{(a) 弯曲角的变化}%加*可以去掉默认前缀，作为图片单独的说明    
+	\label{fig:angle}    
+\end{minipage}    
+\begin{minipage}[t]{0.5\linewidth}%需要几张添加即可，注意设定合适的linewidth    
+	\centering    
+	\includegraphics[width=1\linewidth]{figure/chap3/freq.jpg}    
+	\caption*{(b) 摆动频率的变化}    
+	\label{fig:freq}    
+\end{minipage}    
+\bicaption{线虫弯曲角度和摆动频率的变换}{An EPS and PDF demo with subcaptionbox}%n张图片共享的说明
+\end{figure}
 
+%\subsection{线虫运动速度的计算}
 
 \section{本章小结}
-
+	本章详细介绍了线虫图像处理的流程，并介绍了基于高斯混合模型的背景建模方法在线虫前景轮廓提取任务中的应用。
+	提出了一种基于最近邻搜索的线虫轮廓跟踪算法，最后，介绍了线虫轮廓中间脊线的计算方法，并定义了线虫身体
+	弯曲角以及基于弯曲角的摆动频率估计。
 
