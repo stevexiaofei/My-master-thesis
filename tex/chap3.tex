@@ -1,4 +1,5 @@
 \chapter{线虫轮廓的分割、跟踪及特征提取}
+\section{引言}
 	本章将介绍线虫图像处理的流程，包括线虫轮廓的分割、跟踪和特征提取等多个步骤。本章介绍 一种基于背景减除的
 	线虫轮廓分割方法，但这种前景提取的方法存在一定的局限性(如：如鲁棒性不足且只能针对静止背景的图像等)。本文将在
 	第三章提出一种基于神经网络的前景分割方法，线虫轮廓的解析将在第四章进行介绍。基于轮廓解析的结果，本章提出
@@ -22,7 +23,7 @@
 		{The flow chart of C.elegans image processing}
 	  \label{fig:flow}
 	\end{figure}
-\section{基于背景减除方法的线虫轮廓分割}
+\section{基于背景减除方法的线虫前景轮廓提取}
 	通过背景减除方法实现前景轮廓提取需要对背景进行建模，假设在一幅图像中每个像素的取值具有空间独立性
 	，只与最近的T个历史像素取值相关。在时间$t$历史像素可以表示为$h_T=\{x^{(t)},\dots,x^{(t-T)}\}$,
 	则每个像素的取值用一个包含M个高斯的混合高斯概率函数来建模,公式\ref{eq:gmm}中$FG$表示像素属于前景，$BG$表示
@@ -220,7 +221,7 @@
 	为n，则线虫在$t$时刻的瞬时摆动频率由公式\ref{eq:freq}得出，图\ref{fig:freq}表示线虫摆动频率随时间的变换。
 	\begin{equation}
         f=\frac{frame\_rate*n}{2*\Delta t} \label{eq:freq}
-		\end{equation}
+	\end{equation}
 		
  % \begin{figure}[th]
   % \centering
@@ -259,9 +260,9 @@
 \begin{minipage}[t]{0.5\linewidth}%需要几张添加即可，注意设定合适的linewidth    
 	\centering    
 	\includegraphics[width=1\linewidth]{figure/chap3/freq.jpg}    
-	\caption*{(b) 摆动频率的变化}    
-	\label{fig:freq}    
-\end{minipage}    
+	\caption*{(b) 摆动频率的变化}
+	\label{fig:freq}
+\end{minipage}
 \bicaption{线虫弯曲角度和摆动频率的变换}{An EPS and PDF demo with subcaptionbox}%n张图片共享的说明
 \end{figure}
 
