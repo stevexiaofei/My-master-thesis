@@ -1,19 +1,31 @@
-\chapter{线虫轮廓的分割、跟踪及特征提取}
+\chapter{基于深度卷积网络的线虫前景轮廓提取}
 \section{引言}
-	本章将介绍线虫图像处理的流程，包括线虫轮廓的分割、跟踪和特征提取等多个步骤。本章介绍 一种基于背景减除的
-	线虫轮廓分割方法，但这种前景提取的方法存在一定的局限性(如：如鲁棒性不足且只能针对静止背景的图像等)。本文将在
-	第三章提出一种基于神经网络的前景分割方法，线虫轮廓的解析将在第四章进行介绍。基于轮廓解析的结果，本章提出
-	一种基于二分图匹配的跟踪方法。最后，本章将介绍一些在药物筛选和毒理学研究中用于量化线虫行为的特征(如：体长、摆动频率
-	和运动速度等)。
+秀丽隐杆线虫由于通体透明，且PDMS制作的微流控芯片也是透明的，所以线虫轮廓的分割是个难点。
+通过简单的阈值分割的方法，并不能够很好的分割线虫的轮廓，因为前景像素的灰度值范围被包括在背景像素的灰度范围内。
+通过背景减除的方法分割的线虫轮廓。由于图像噪声的影响，会导致分割的线虫轮廓出现断裂、不完整等情况。
+这些都会导致线虫跟踪的失败。另一方面，背景的估计需要$50\sim100$帧背景不变的图像。
+当需要对线虫进行实时跟踪时，基于背景估计的线虫前景分割算法需要一个启动时间用于背景的估计。
+另外，当CCD相机或载物台移动时(如：需要观察不同腔室中的虫子)，由于背景的改变，这种算法还是会失效。
+卷积网络作为一种强大的特征提取器在许多计算机视觉中取得了很大的成功。
+
+	本课题将卷积网络用于线虫轮廓的前景提取具有如下优势：
+	
+\begin{enumerate}
+  \item 与基于背景减除的方法相比，基于卷积网络的分割不需要对图像背景建模，只依赖当前帧的图像，从而能够保证实时性的要求。
+  \item 能够降低硬件成本，传统的线虫图像处理，为了获得一个背景和线虫轮廓对比度比较高的图像。通常使用特制的硬件对CCD和照明都有很高的要求。卷积网络作为一种强大特征提取器降低了对图像质量的要求。
+  \item 鲁棒性更好，传统的线虫轮廓分割算法，通常需要人工的选取一些超参数(如：分割的阈值，形态学操作中核的大小等等)，但由于视频采集过程中照明的变化以及图像噪声的影响很难选取一个最佳的全局参数。
+基于卷积网络的分割是一种端到端的方法，输出直接是分割的结果，因此，这种方法不依赖超参数的选取，具有很好的鲁棒性。
+\end{enumerate}
 \section{线虫图像处理总体方案介绍}
 	线虫图像处理的总体流程如图\ref{fig:flow}所示，共分成4个阶段。第一个阶段是从采集到的视频中读取一帧图像，并将
 	线虫轮廓覆盖的区域定义为前景，剩下的区域视为背景。这一阶段的输出为一幅二值化的图像，其中1表示前景0表示
 	背景。如果是单线虫的跟踪，则第一个阶段的输出则为线虫的轮廓。但考虑到多线虫跟踪过程中多个线虫的轮廓会出现
 	相交甚至纠缠在一起，导致因无法区分单个线虫从而跟踪丢失。第二个阶段的任务主要是对多个线虫相交的轮廓进行解析，
 	从而得到单个线虫的轮廓。第三个阶段的线虫跟踪是利用线虫轮廓的重心面积等信息找出相邻两帧图像之间线虫轮廓的对应
-	关系。第四个阶段主要是利用跟踪到的线虫轮廓计算出线虫体长、运动速度等信息。
+	关系。第四个阶段主要是利用跟踪到的线虫轮廓计算出线虫体长、运动速度等信息。本章主要介绍线虫图像处理流程中
+	第一个阶段的内容。
 
-		\begin{figure}[h]
+	\begin{figure}[h]
 	  \centering
 	  \includegraphics[width=14cm]{figure/chap3/flow.jpg}
 	  % \hspace{1cm}
@@ -23,253 +35,85 @@
 		{The flow chart of C.elegans image processing}
 	  \label{fig:flow}
 	\end{figure}
-\section{基于背景减除方法的线虫前景轮廓提取}
-	通过背景减除方法实现前景轮廓提取需要对背景进行建模，假设在一幅图像中每个像素的取值具有空间独立性
-	，只与最近的T个历史像素取值相关。在时间$t$历史像素可以表示为$h_T=\{x^{(t)},\dots,x^{(t-T)}\}$,
-	则每个像素的取值用一个包含M个高斯的混合高斯概率函数来建模,公式\ref{eq:gmm}中$FG$表示像素属于前景，$BG$表示
-	该像素属于背景。$\hat{u}_1,\dots,\hat{u}_M$和$\hat{\sigma}_1^2,\dots,\hat{\sigma}_M^2$分别表示混合高斯模型中的待估参数均值和方差。
-	$\hat{\pi}_m$表示高斯权重且所有权重相加等于1。
-	\begin{equation}
-		p(\vec{x}|h_T,BG+FG)= \sum_{m=1}^{M} \hat{\pi}_{m}N(\vec{x};\hat{u}_m,\hat{\sigma}_m^2I)\label{eq:gmm}
-	\end{equation}
-	当在时刻t得到一个新像素值$\vec{x}^{(t)}$时，模型参数将如下方式更新,其中$\vec{\delta}_m=\vec{x}^{(t)}-\hat{u}_m$，
-	$a=1/T$。并将与新像素值$\vec{x}^{(t)}$最近的高斯分量对应的$o_m^{(t)}$设置为1其他设置为0。
-	\begin{equation}
-		\hat{\pi}_m \leftarrow \hat{\pi}_m +a(o_m^{(t)}-\hat{\pi}_m) \label{eq:updata}
-	\end{equation}
-	\begin{equation}
-		\hat{u}_m \leftarrow \hat{u}_m +o_m^{(t)}(a/\hat{\pi}_m)\vec{\delta}_m \label{eq:updata1}
-	\end{equation}
-	\begin{equation}
-		\hat{\sigma}_m^2 \leftarrow \hat{\sigma}_m^2 +o_m^{(t)}(a/\hat{\pi}_m)(\vec{\delta}_m^T\vec{\delta}_m-\hat{\sigma}_m^2) \label{eq:updata2}
-	\end{equation}
-	将M个高斯分量按照权重从大到小排序，则背景模型可以通过前B个最大的高斯分量来近似。
-	\begin{equation}
-		p(\vec{x}|h_T,BG) \sim \sum_{m=1}^{B} \hat{\pi}_{m}N(\vec{x};\hat{u}_m,\hat{\sigma}_m^2I)\label{eq:bg}
-	\end{equation}
-	如图\ref{fig:bgsub}所示基于混合高斯
-	模型的背景减除方法与简单的帧间差分法相比，背景减除的方法能够显著的减少前景轮廓提取的不连续且分割的性能
-	更好。用一个$5\times5$的核对提取到的前景轮廓进行形态学闭运算得到的结果如图\ref{fig:bgsub:close}所示，形态学
-	闭运算用于连接线虫轮廓的断裂。
-	最后，运用OTSU二值化算法就可以得到最终的线虫前景轮廓如图\ref{fig:bgsub:bin}所示。
-
+\section{传统的图像分割方法分类介绍}
+	图像分割是生物医疗图像处理任务最重要的步骤之一，图像分割指的是将图像按照预先定义的
+	相似度准则将图像划分为若干个区域的过程，相似度准则可以是代表同一个对象的像素
+	的特性或特征。
+\subsection{基于像素的图像分割方法}
+	基于像素的阈值分割方法通过利用图像灰度直方图的统计信息来确定一个或者多个阈值来，
+	并对图像中每个像素进行比较和分类。其中OSTU于1979年提出了基于最大类间方差的阈值分割方法，
+	通过最大化类间方差计算出一个全局最优阈值。与全局阈值法相对应的是自适应阈值的分割，由于每个像素的阈值
+	是根据其局部邻域内的统计直方图计算的，所以对于光照不均匀的图像其具有很好的分割效果。除了以上提到
+	的两种方法外，还有最大熵阈值法、双峰法、P参数法等。
 	
-% \begin{figure*}
-% \centering
-% \subfigure[Input]{
-% \begin{minipage}[b]{0.23\linewidth}
-% \includegraphics[width=1\linewidth]{figure/chap3/worm.png}\vspace{4pt}
-% \includegraphics[width=1\linewidth]{figure/chap3/bgsub.png}\vspace{4pt}
-% \includegraphics[width=1\linewidth]{figure/chap3/close.png}
-% \end{minipage}}
-% \subfigure[CE]{
-% \begin{minipage}[b]{0.23\linewidth}
-% \includegraphics[width=1\linewidth]{figure/chap3/bg.png}\vspace{4pt}
-% \includegraphics[width=1\linewidth]{figure/chap3/difffra.png}\vspace{4pt}
-% \includegraphics[width=1\linewidth]{figure/chap3/otsu.png}
-% \end{minipage}}
-% \caption{description of figure}
-% \end{figure*}
-\begin{figure}[h]
-  \centering
-  \begin{subfigure}{0.4\textwidth}
-    \centering
-    \includegraphics[width=1\linewidth]{figure/chap3/worm.png}
-    \caption{待处理线虫图像}
-	\includegraphics[width=1\linewidth]{figure/chap3/bgsub.png}
-	\caption{基于混合高斯模型背景减除图片}
-	\includegraphics[width=1\linewidth]{figure/chap3/close.png}
-	\caption{对背景减除得到的图像闭运算}\label{fig:bgsub:close}
-  \end{subfigure}
-  \hspace{4em}
-  \begin{subfigure}{0.4\textwidth}
-    \centering
-    \includegraphics[width=1\linewidth]{figure/chap3/bg.png}
-    \caption{基于混合高斯模型建模的背景图}
-	\includegraphics[width=1\linewidth]{figure/chap3/difffra.png}
-	\caption{帧间差分法结果图}
-	\includegraphics[width=1\linewidth]{figure/chap3/otsu.png}
-	\caption{OTSU阈值处理后的二值图}\label{fig:bgsub:bin}
-  \end{subfigure}
-  \bicaption{前景提取过程中的图片}{The images in the foreground object extraction}
-  \label{fig:bgsub}
-\end{figure}
-\section{线虫轮廓的跟踪}
-	由于线虫通体透明，跟踪起来比较困难，本文采用了一种简单有效的跟踪策略。首先经过
-	线虫前景轮廓提取和线虫轮廓解析等步骤后，可以得到每一帧图像里所有线虫的轮廓。由
-	公式\ref{eq:m}和公式\ref{eq:xy}可以计算出轮廓的重心坐标。
-	\begin{equation}
-		m_{ji}=\sum_{x,y}I_{x,y}x^iy^j \label{eq:m}
-	\end{equation}
-	\begin{equation}
-		\vec{x}=\frac{m_{10}}{m_{00}},\quad \vec{y}=\frac{m_{01}}{m_{00}}\label{eq:xy}
-	\end{equation}
-	假设当前帧有n个轮廓，上一帧
-	图像有m个轮廓，由每个轮廓的重心坐标可以得到一个$n\times m$的距离矩阵用公式\ref{eq:matrix}
-	表示。
-		\begin{equation}
-                        D=\left[
-                \begin{matrix}
-                 d_{11}      & d_{12}      & \cdots & d_{1m}      \\
-                 d_{21}      & d_{22}      & \cdots & d_{2m}      \\
-                 \vdots & \vdots & \ddots & \vdots \\
-                 d_{n1}      & d_{n2}      & \cdots & d_{nm}      \\
-                \end{matrix}
-                \right]\label{eq:matrix}
-    \end{equation}
-	\begin{figure}[t]
+	与通过阈值将像素分为多个类别的阈值分割方法不同，基于像素聚类的分割是通过对像素的灰度值或者特征
+	向量的聚类实现图像分割。如彩色图像往往具有R、G、B三个通道，因此可以将每个像素的三个颜色通道的
+	分量值添加到该像素的特征向量里。这是像素聚类的一个优势，其能够利用每个像素更多的信息，而阈值分割
+	只能利用像素的灰度值。像素聚类往往产生不连续带有孔洞的区域或者具有单个孤立像素的区域，所以聚类后
+	一般都需要后处理算法以消除这些缺陷。常用的后处理算法有区域生长、像素连接和一些基于规则的算法等。
+	常见的聚类算法有K均值聚类算法和以模糊集合为基础的Fuzzy cmeans(FCM)聚类聚类算法等。
+\subsection{基于边缘的图像分割方法}
+	基于边界的图像分割方法通常使用空间滤波的方法计算图像的一阶梯度和二阶梯度。Sobel算子常被用于
+	计算图像的一阶梯度信息。Laplacian算子常被用于计算图像的二阶梯度信息。使用这些微分算子对图像进行空间滤波
+	便可以将图像中不同区域的边缘检测出来。由于图像中噪声的影响，这些边缘通常是不连续的。
+	为了形成闭合的区域，通常需要将这些不连续的边连接起来。常用的算法有Canny边缘检测算法。
+\subsection{基于区域的图像分割方法}
+	基于区域生长的图像分割方法是根据预先定义的相似性准则将相邻的像素或或或相邻的区域融合形成一个
+	大的区域。当原图像被过度分割成很多小区域时，区域生长的方法作为一种有效的后处理方法能够处理分割
+	过程中目标轮廓出现断裂的情况。与区域生长相对应的是区域分裂，这种方法可以将一个大的区域分割成两个
+	或者更多的小区域。另外，区域分裂的分割方法可能使目标轮廓产生孔洞。
+\subsection{交互式的图像分割方法}
+	所谓交互式的图像分割方法指的是需要用户提供输入的分割方法(如：需要用户提供一个矩形框或者鼠标点击
+	等输入操作)，是一种半自动化的图像分割方法。目前常见的交互式图像分割方法有基于图论的GrabCut算法\cite{rother2004grabcut}
+	和基于曲线演化的活动轮廓分割方法。GrabCut算法是由Rother等人于2004年提出，通过引入Gibbs能量函数，将前景背景分割
+	问题转化为一个能量最小化的问题，通过迭代计算的方式将能量最小化。在分割的过程中，用户还用画刷将某个区域标记为前景或
+	背景，然后让算法继续迭代以改善分割的性能。另一方面，基于活动轮廓的分割方法总是能够获得连续的闭合的轮廓。
+	特别是将水平集理论应用于活动轮廓分割使得该方法可以自动处理轮廓的分裂和合并，使其更具灵活性。其原理
+	是曲线在某些力的作用下呈现扩张或者收缩的运动，最终会收敛于目标轮廓的边缘。但是活动轮廓的分割方法需要
+	提供一个初始轮廓作为算法的输入，因此也是一种半自动化的分割方法。
+\subsection{基于背景减除的分割方法}
+
+\section{线虫轮廓前景分割卷积网络的设计及模型评估}
+
+\subsection{数据集的制作}
+\subsubsection{数据集的采集}
+	图\ref{fig:chap5:camera}是线虫图像采集的系统装置图，主要由显微镜、CCD相机、照明系统和微流控芯片四个部分组成，CCD
+	相机通过数据线连接电脑进行图像数据传输。线虫通过注射泵注入到微流控芯片的腔室内。移动显微镜的载物台使线虫腔室
+	位于视野的正中央。调节显微镜的放大倍数使线虫腔室充满整个视野。调整显微镜焦距使视野中呈现清晰的图像。调整CCD相机的
+	曝光时间以获得一个对比度比较高的线虫图像。完成以上步骤后便可以进行线虫视频的录制。
+	\begin{figure}[thb]
 	  \centering
-	  \includegraphics[width=9cm]{figure/chap3/track.jpg}
+	  \includegraphics[width=8cm]{figure/chap5/camera.jpg}
 	  \bicaption[这里将出现在插图索引中]
-		{跟踪的结果}
-		{The tracking result}
-	  \label{fig:track}
+		{图像采集系统图}
+		{Change in contour curvature}
+	  \label{fig:chap5:camera}
 	\end{figure}
-	矩阵中$d_{ij}$表示当前帧中的第i个轮廓的重心到上一帧中第j个轮廓的重心之间的距离。通过
-	公式\ref{eq:min}可以得到相邻两帧图像中线虫轮廓之间的对应关系。即如果相邻两帧图像中两个
-	轮廓重心之间的距离最短，则可以认为是同一个线虫。
-		\begin{equation}
-        index(i)=\mathop{\arg\min}_{j} d_{ij}\label{eq:min}
-		\end{equation}
-	但事实上由于轮廓分割的不完美以及图像噪声的影响
-	，这一策略往往会失效。因此，通过最近邻搜索的方式来实现线虫的跟踪要满足以下的约束条件，当这两个
-	条件之一不满足时，则认为跟踪丢失，此时应该分配一个新的trackID给当前的轮廓。算法\ref{algo:worm_track}
-	是描述了线虫跟踪算法的实现思路。图\ref{fig:track}表示跟踪的结果。
-	
-	\begin{itemize}
-	  \item 相邻两帧图像中同一只线虫的轮廓面积的相对变化应该小于一个阈值。
-	  \item 根据线虫运动的最大速度，同一只线虫在相邻两帧图像中轮廓的重心之间的距离应该小于一个阈值。
-	\end{itemize}
-
-\begin{algorithm}
-\caption{跟踪初始化程序}
-\label{algo:initial_track}
-\begin{algorithmic}[1]
-	\Require $Worm\_data$双重列表，$Worm\_data[i][j]$表示第$i$帧图像中第$j$只线虫。
-	\Ensure 输出$trackID$
-	\Function {Initiate\_tracking}{$Worm\_data$}
-		\State $FirstFrame\_WormData \gets Worm\_data[0]$
-		\For{$i = 0 \to FirstFrame\_WormData.length-1$}
-			\State $cur\_worm \gets FirstFrame\_WormData[i]$
-			\State $cur\_worm.trackID \gets GetNewTrackID()$
-		\EndFor
-\EndFunction
-\end{algorithmic}
-\end{algorithm}
-
-\begin{algorithm}[H]
-\caption{线虫跟踪程序}
-\label{algo:worm_track}
-\begin{algorithmic}[1]
-	\Require $Worm\_data$双重列表，$Worm\_data[i][j]$表示第$i$帧图像中第$j$只线虫。
-	\Ensure 输出$trackID$
-	\Function {Worm\_tracking}{$Worm\_data$}
-		\State $Initiate\_tracking(Worm\_data)$
-		\For{$frame_index = 1 \to Worm\_Data.length-1$}
-			\State $PreFrame\_WormData \gets Worm\_Data[frame_index-1] $
-			\For{$worm\_index =0 \to Worm\_Data[frame_index].length-1$}
-% \algstore{WormTracking}
-% \end{algorithmic}
-% \end{algorithm}
-% \begin{algorithm}[H]
-% \begin{algorithmic}[1]
-% \algrestore{WormTracking}
-		
-				\State $cur\_worm \gets Worm\_Data[frame\_index][worm\_index]$
-				\State $dist\_array \gets Compute\_distance(cur\_worm,PreFrame\_WormData)$
-				\State $min\_index \gets Get\_min\_index(dist\_array)$
-				\State $Nearest\_worm \gets PreFrame\_WormData[min\_index]$
-				\If{$\small{\frac{|Nearest\_worm.Area-cur\_worm.Area|}{Nearest\_worm.Area}<\delta \quad \text{and}  \quad dist\_array[min\_index]< \sigma}$}
-					\State $cur\_worm.trackID \gets Nearest\_worm.trackID$
-				\Else
-					\State $cur\_worm.trackID \gets GetNewTrackID( )$
-				\EndIf
-			\EndFor
-		\EndFor
-\EndFunction
-\end{algorithmic}
-\end{algorithm}
-\section{线虫的特征提取}
-	线虫从头部到尾部两边近似等距的分布着23-24块肌肉，其头部和尾部各占其总长度的$1/6$。因此线虫
-	身体的自由度为24。当用轮廓来描述线虫的形态时，在其轮廓上采样49个点足以描述线虫所有形态。
-	当对线虫进行特征计算时(如：计算线虫摆动频率和运动速度等)，通常是利用线虫轮廓中间的脊线进行计算。
-	因此需要提取线虫轮廓的中线然后采样24个点用于特征计算。下面将首先对线虫轮廓中间脊线提取算法进行介绍，
-	然后介绍线虫摆动频率的估计以及运动速度的计算。
-\subsection{线虫轮廓中间脊线提取}
-	在得到线虫的轮廓后，将轮廓上的坐标按顺时针排列即可得到一个坐标点的循环列表。将轮廓周长的$1/48$作为一个单位边，
-	在轮廓上的任意一点其两边都可以找到一个单位边长度的相邻点，这三点所成角的补角的倒数与该点的曲率成正比，因此
-	可以用于近似曲率的计算。由于其头部和尾部的变换往往比身体的其他部分要尖锐，所以如果将像素索引作为横坐标曲率作为
-	纵坐标，则这条曲线上将会出现两个波峰如图\ref{fig:qulv}所示，分别对应线虫的头部和尾部。由此便可定位到线虫的头部和尾部，另外线虫的头部
-	曲率一般小于尾部的曲率，两个波峰中比较低的波峰对应的横坐标为线虫头部的坐标，另一个波峰对应线虫尾部的坐标。
-	线虫头部和尾部将线虫轮廓分为两边。在其中一条边上找到所有距离另一条边最近的对应点。两条边上两对应点的中点构成线虫的
-	中间脊线，线虫轮廓中间脊线的长度定义为线虫的体长。
+\subsubsection{数据集的标注}
+	高质量的数据集对网络的训练来说至关重要，且数据集的质量决定了神经网络模型性能的上限，通过优化网络架构的方法
+	也只能逼近这个上限。但数据集的标注通常是一个非常耗时的过程，特别是图像分割任务要对不同的区域标记。目前很多的
+	图像分割的标注工具(如：Labelme\footnote{\url{https://github.com/wkentaro/labelme}}和Ratesnake\footnote{\url{https://is-innovation.eu/ratsnake/}}等)都是采用多边形近似的标注方法，
+	即在轮廓的四周边缘采集足够多的点，这些点构成的多边形为标注对象的轮廓。由于线虫形态变化复杂，相对于其他目标
+	的标注往往需要采集更加密集的点才能满足线虫轮廓标注的精度。为了提高线虫图像标注的效率，本文采用了一种半自动的线虫轮廓
+	标注方法。将Grabcut算法用于线虫轮廓的标注，只需要用矩形框将线虫轮廓框出作为Grabcut算法输入，算法可以自动的分割
+	出线虫的轮廓，最后再将多个线虫轮廓合成为一个标签图像。通过这种方法，本文制作了一个包含211个样本的数据集，图\ref{fig:dataset}是数据集部分示例。
+	整个数据集按照$8:2$的比例将数据集分为训练集与测试集两部分分别用于网络模型的训练与测试。
 	\begin{figure}[h]
 	  \centering
-	  \includegraphics[width=14cm]{figure/chap3/qulv.jpg}
+	  \includegraphics[width=14cm]{figure/chap3/dataset.jpg}
 	  % \hspace{1cm}
 	  % \includegraphics[width=4cm]{example/sjtulogo.jpg}
 	  \bicaption[这里将出现在插图索引中]
-		{轮廓曲率的变化}
-		{Change in contour curvature}
-	  \label{fig:qulv}
+		{数据集示例}
+		{The flow chart of C.elegans image processing}
+	  \label{fig:dataset}
 	\end{figure}
-\subsection{身体弯曲角度的计算以及摆动频率的估计}
-	在很多毒理实验中，线虫的摆动频率经常作为一个重要的生理指标用于表征线虫的活跃程度\cite{Wang2008Assessment}。
-	为了计算线虫的摆动频率， 我们定义一个衡量身体弯曲程度的夹角，由线虫头部、尾部和轮廓脊线的中点三点所成角定义为
-	身体弯曲角。线虫在爬行和游动的过程中，身体弯曲角会在$180^\circ$C左右振荡如图\ref{fig:angle}，振荡的频率定义为
-	线虫摆动的频率。在时刻$t_0$,对区间$(t_0-\Delta t,t_0+\Delta t)$中弯曲角信号做FFT变换，假设其幅度最大值对应的横坐标
-	为n，则线虫在$t$时刻的瞬时摆动频率由公式\ref{eq:freq}得出，图\ref{fig:freq}表示线虫摆动频率随时间的变换。
-	\begin{equation}
-        f=\frac{frame\_rate*n}{2*\Delta t} \label{eq:freq}
-	\end{equation}
-		
- % \begin{figure}[th]
-  % \centering
-  % \begin{subfigure}{0.5\textwidth}
-    % \centering
-    % \includegraphics[width=5cm]{figure/chap3/angle.jpg}
-    % \caption{弯曲角的变化}\label{fig:angle}
-  % \end{subfigure}
-  % \hspace{4em}
-  % \begin{subfigure}{0.5\textwidth}
-    % \centering
-    % \includegraphics[width=5cm]{figure/chap3/freq.jpg}
-    % \caption{摆动频率的变化}\label{fig:freq}
-  % \end{subfigure}
-  % \bicaption{线虫弯曲角度和摆动频率的变换}{The images in the foreground object extraction}
-  % \label{fig:bgsub}
-% \end{figure}
-% \begin{figure}[!htp]
-  % \centering
-  % \subcaptionbox{弯曲角的变化\label{fig:angle}}%标题的长度，超过则会换行，如下一个小图。
-    % {\centering
-	% \includegraphics[height=5cm]{figure/chap3/angle.jpg}}
-  % \hspace{3em}
-  % \subcaptionbox{摆动频率的变化\label{fig:freq}}
-    % {\includegraphics[height=5cm]{figure/chap3/freq.jpg}}
-  % \bicaption{线虫弯曲角度和摆动频率的变换}{An EPS and PDF demo with subcaptionbox}
-  % \label{fig:pdfeps-subcaptionbox}
-% \end{figure}
-\begin{figure}[!htp]    
-\begin{minipage}[t]{0.5\linewidth}%设定图片下字的宽度，在此基础尽量满足图片的长宽    
-	\centering    
-	\includegraphics[width=1\linewidth]{figure/chap3/angle.jpg}    
-	\caption*{(a) 弯曲角的变化}%加*可以去掉默认前缀，作为图片单独的说明    
-	\label{fig:angle}    
-\end{minipage}    
-\begin{minipage}[t]{0.5\linewidth}%需要几张添加即可，注意设定合适的linewidth    
-	\centering    
-	\includegraphics[width=1\linewidth]{figure/chap3/freq.jpg}    
-	\caption*{(b) 摆动频率的变化}
-	\label{fig:freq}
-\end{minipage}
-\bicaption{线虫弯曲角度和摆动频率的变换}{An EPS and PDF demo with subcaptionbox}%n张图片共享的说明
-\end{figure}
+\subsection{条件随机场模型在分割任务中的应用}
+	
+\subsection{网络结构的设计}
 
-%\subsection{线虫运动速度的计算}
+\subsection{网络模型的训练}
+
+\subsection{实验结果分析}
 
 \section{本章小结}
-	本章详细介绍了线虫图像处理的流程，并介绍了基于高斯混合模型的背景建模方法在线虫前景轮廓提取任务中的应用。
-	提出了一种基于最近邻搜索的线虫轮廓跟踪算法，最后，介绍了线虫轮廓中间脊线的计算方法，并定义了线虫身体
-	弯曲角以及基于弯曲角的摆动频率估计。
-

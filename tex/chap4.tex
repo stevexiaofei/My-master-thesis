@@ -1,4 +1,5 @@
 \chapter{基于深度卷积网络的线虫轮廓解析}
+\section{引言}
 	多线虫跟踪问题中，多线虫轮廓之间相互遮挡是造成线虫跟踪丢失的主要原因，是实现线虫长期跟踪的关键。
 	如图\ref{fig:multiworm}所示，是一张经过前景轮廓提取后得到的一幅二值化图片，图中线虫轮廓之间出现严重的相互遮挡的情况
 	。虽然人眼可以很轻松的辨别出图中所有单个线虫的轮廓，但自动化地线虫轮廓解析却十分困难，尽管深度学习在图像分割任务中取得了很大的成功，
@@ -197,7 +198,7 @@
 		{Change in contour curvature}
 	  \label{fig:chap4:dataset}
 	\end{figure}
-\subsection{训练集的制作}
+\subsection{数据集的制作}
 \label{dataset}
 	SingleOut-Net网络的训练需要大量的标定的数据集，本文采用了人工生成的数据集来训练网络的参数。
 	数据集的制作流程如图\ref{fig:chap4:dataset}所示。
@@ -242,7 +243,7 @@
 		{Change in contour curvature}
 	  \label{fig:chap4:respool}
 	\end{figure}
-\subsection{网络的训练及模型评价}
+\subsection{损失函数及评价指标}
 \subsubsection{损失函数}
 	在对神经网络进行训练之前，首先需要确定网络训练的损失函数(也即目标函数)。神经网络通过不断地调整网络的
 	模型参数使得训练损失不断减小。由上一小节可知，网络的最后一层输出是一张概率图设为$p$，$y$为标签图(只包含0和1)。
@@ -257,7 +258,7 @@
 	\begin{equation}
 		pixel\_cls\_error =1- \frac{number\_of\_corrected\_classified\_pixels}{total\_number\_of\_pixels} \label{eq:metrics}
 	\end{equation}
-\subsubsection{网络的训练}
+\subsection{网络的训练}
 	
 	根据\ref{dataset}节介绍的数据集生成方法，可以生成任意大小的训练集。但为了节省内存开销，本文采用了训练集动态生成的方法
 	，即在训练阶段每个minibatch的样本图片都是动态生成的。但动态生成训练样本需要一定的时间开销，从而使网络训练时间变长。为了缩短网络训练时间以及在限定
@@ -318,7 +319,7 @@
 		{Change in contour curvature}
 	  \label{fig:chap4:progress}
 	\end{figure}
-\subsubsection{测试结果与分析}
+\subsection{测试结果与分析}
 	 在\ref{archtecture}节，本文介绍了SingleOut-Net的网络架构，由两个模块构成编解码器结构。后端模块是一个pixelCNN，
 	 相当于一个解码器的作用。为了分析这种编解码结构的网络性能，本文分别从像素误差、模型复杂度和推断时间三个方面考察了
 	 pixelCNN网络模块对整个网络架构的影响。由于pixelCNN网络模块的输入和输出的尺寸保持不变，所以可以将pixelCNN模块
