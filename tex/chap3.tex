@@ -72,7 +72,101 @@
 	是曲线在某些力的作用下呈现扩张或者收缩的运动，最终会收敛于目标轮廓的边缘。但是活动轮廓的分割方法需要
 	提供一个初始轮廓作为算法的输入，因此也是一种半自动化的分割方法。
 \subsection{基于背景减除的分割方法}
+	Zivkovic等人\cite{zivkovic2006efficient}在2006年提出了一种基于对单个像素进行混合高斯建模的背景估计的方法。
+	其主要针对背景固定的视频。以上小节提到的分割方法都只需要用到当前帧图像的信息，而与上面提到的分割方法不同，基于背景减除的分割方法还需要用到当前帧之前的
+	多帧图像信息。对图像中每一个像素用一个混合高斯概率函数建模。模型参数包括高斯均值$u_i$、高斯方差$\sigma_i$、高斯权重$w_i$。每读取
+	一帧图像，便对模型做一次更新。预测背景的时候，将所有高斯按照其权重的大小排序，取前$B$个高斯分量作为背景，$B$由
+	公式\ref{eq:gmm}表示，其中参数T表示背景所占的比例。得到每一帧图像的背景后再与当前帧图像相减，经过二值化处理
+	后便可得到分割后的前景轮廓。
+	\begin{equation}
+	B=\mathop{\arg\min}_{b} \sum_{k=1}^b w_k>T \label{eq:gmm}
+	\end{equation}
+\section{卷积神经网络介绍}
+	从1956年正式提出人工智能学科以来，人工智能领域的研究经历了60年的发展。期间，不同学科背景的学者们对人工智能的实现，提出
+	了不同的观点并由此产生了不同的学术流派。其中对人工智能领域影响较大的主要有符号主义(Symbolism)、
+	连接主义(Connectionism)和进化主义(Evolutionism)或控制论学派(Cyberneticsism)等。
+	目前，在诸多领域取得重大突破的深度学习(Deep learning)技术是连接主义学派的典型代表性技术。其主要受
+	神经科学的启发，大脑中大量的神经元形成复杂的连接，信号在神经元之间传递。人工神经网络(Artificial Neural Network,ANN)
+	利用大量相互连接的节点构成，每个节点代表一个特定激活函数的输出，两个节点之间的连接都有一个权重。通常，神经网络模型
+	都是由多层网络堆叠而成，前一层网络的输出作为后一层网络的输入。从网络的输出来看，整个网络的输出相当于由许多张量函数嵌套构成的
+	复合函数，网络模型参数的训练依赖的误差反向传播的算法其实质是复合函数的链式求导法则。
+	
+	卷积网络(Cnvolutional Neural Network,CNN)是人工神经网络模型中的一种，由Yan Lecun于1989年提出并将其用于手写数字识别
+	\cite{le1989handwritten},卷积操作类似于图像处理中的空间滤波，不同的是滤波核作为模型参数是通过学习得到的。
+	一个典型的卷积网络架构如图\ref{fig:chap4:cnn}所示，通常由卷积层，池化层，全连接层等构成。为了使模型具有更好的泛化
+	性能，通常在不同的层之间还会加入Dropout层和Batch Normalization层。自2006年以来，研究者们不断对卷积网络进行改进提出
+	了很多性能优异的网络架构(如：AlexNet网络\cite{krizhevsky2012imagenet}、VGG网络\cite{simonyan2014very}、
+	GoogLenet网络\cite{szegedy2015going}和ResNet网络\cite{Kaiming2015Deep})。使卷积网络在许多计算机视觉任务中大放异彩。
+	\begin{figure}[h]
+	  \centering
+	  \includegraphics[width=12cm]{figure/chap4/CNN-arch.png}
+	  \bicaption[这里将出现在插图索引中]
+		{卷积网络的经典结构}
+		{A typical architecture of CNN}
+	  \label{fig:chap4:cnn}
+	\end{figure}
+\subsection{卷积层}
+	卷积层是卷积网络中主要的连接层，由于其引入权值共享的机制，与全连接的方式相比将网络的模型参数减小了几个数量级，
+	且对输入图像的缩放和旋转等变形具有高度不变性。如图\ref{fig:chap4:cnn-op}所示，卷积操作可以理解为卷积核在输入
+	张量上的滑动。输出张量的尺寸大小由卷积核的大小、填充的大小、步长和输入张量的大小决定。
+	公式\ref{eq:cnn:io}表示了这一关系，其中$o$和$i$表示输出张量和输入张量在某一维度的大小，$p$和$s$分别表示
+	填充的大小和卷积步长，k表示卷积核的大小。图\ref{fig:chap4:cnn-op}中$i=6,p=1,k=3,s=2$根据公式\ref{eq:cnn:io}
+	可以得到$o=3$。
+	\begin{equation}
+		o = \lfloor \frac{i+2p-k}{s} \rfloor +1 \label{eq:cnn:io}
+	\end{equation}
+	
+	\begin{figure}[h]
+	  \centering
+	  \includegraphics[width=7cm]{figure/chap4/CNN-op.jpg}
+	  \bicaption[这里将出现在插图索引中]
+		{卷积操作示意图}
+		{A typical architecture of CNN}
+	  \label{fig:chap4:cnn-op}
+	\end{figure}
+\subsection{池化层}
+	池化层是一种对输入张量进行降采样的操作，由于其是在输入张量的每一个通道上进行的，所以不会改变通道的数目。
+	池化操作可以大致分为最大值池化、均值池化和随机池化三种，
+	其都是通过对输入张量一个邻域内的像素值进行聚合统计实现的。因为部分像素的改变并不会对聚合统计的结果
+	造成太大的差异，因此池化操作具有一定的尺度不变性。如图\ref{fig:pooling}是三种池化操作的示意图，最大值
+	池化求领域内特征点的最大值作为统计输出，均值池化求领域内特征点的平均值作为统计输出，随机池化将领域内
+	特征点按照其数值大小赋予概率，然后按概率采样得到结果作为统计输出。
+	\begin{figure}[h]
+	  \centering
+	  \includegraphics[width=8cm]{figure/chap4/pooling.jpg}
+	  \bicaption[这里将出现在插图索引中]
+		{卷积操作示意图}
+		{A typical architecture of CNN}
+	  \label{fig:pooling}
+	\end{figure}
+\subsection{Dropout层}
+	为了解决神经网络过拟合的问题，Srivastava和Hinton等人\cite{srivastava2014dropout}于2014年提出dropout
+	方法，有效的提高了网络的泛化能力。如图\ref{fig:dropout-connection}所示，在网络训练阶段，对每一个神经元以一定的概率
+	丢弃。从而每次更新网络权值时，网络的连接都是随机的，相当于对采样到的网络进行更新。在网络测试阶段，为了
+	得到所有随机连接网络的平均输出，这个阶段网络使用全连接的方式并且网络的权值以一定的比列缩放。
+	\begin{figure}[!htp]    
+\begin{minipage}[t]{0.5\linewidth}%设定图片下字的宽度，在此基础尽量满足图片的长宽    
+	\centering    
+	\includegraphics[width=0.9\linewidth]{figure/chap4/no-dropout.jpg}    
+	\caption*{(a) 测试阶段网络连接 }
+	\label{fig:no-dropout}    
+\end{minipage}    
+\begin{minipage}[t]{0.5\linewidth}%需要几张添加即可，注意设定合适的linewidth    
+	\centering    
+	\includegraphics[width=0.9\linewidth]{figure/chap4/dropout.jpg}    
+	\caption*{(b) 训练阶段网络的连接}
+	\label{fig:dropout}
+\end{minipage}
+\bicaption{线虫弯曲角度和摆动频率的变换}{An EPS and PDF demo with subcaptionbox}%n张图片共享的说明
+\label{fig:dropout-connection}
+\end{figure}
 
+\subsection{Batch Normalization层}
+	批量标准化(Batch Normalization,BN)是深度学习领域一种非常重要的正则化的方法\cite{ioffe2015batch}，有效的
+	解决了内部方差偏移(Internal Covariate Shift)的问题。内部方差偏移指的是在网络训练的过程中，隐藏层的输入的
+	分布一直在变，导致网络收敛变慢。批量标准化的方法可以使隐藏层的输入分布稳定并近似分从标准正态分布，很多
+	激活函数(如tanh函数和sigmoid函数等)在0值附近的梯度是最大的，因此可以获得一个较大梯度，从而大大提高了网络的训练速度。
+	另外，还降低了对初始学习率选取的敏感度。
 \section{线虫轮廓前景分割卷积网络的设计及模型评估}
 
 \subsection{数据集的制作}
@@ -109,11 +203,260 @@
 	  \label{fig:dataset}
 	\end{figure}
 \subsection{条件随机场模型在分割任务中的应用}
+	条件随机场(Condition random field, CRF)是概率无向图模型中的一种\cite{李航2012统计学习方法},
+	目前被很多研究者用于解决图像分割问题并取得了很大的成功\cite{zheng2015conditional,wang2017adaptive,chen2018deeplab}。
+	其能够对空间中相邻像素之间的关系进行建模，从而可以得到具有空间一致性和更加精细化的分割结果。
+	如果分割算法没有考虑到相邻像素之间的依赖关系，相当于认为空间中每个像素都是独立的，
+	这样会导致分割结果中被分割对象的不连续以及可能丢失掉很多细节结构。本文将条件随机场模型应用于
+	线虫前景轮廓的分割任务中，并通过卷积模块加以实现，这样可以保证整个模型的可微性。
+		
+	线虫图像的前景背景分割问题本质上是一个二分类问题，假设有一个标签$Y=\{Y_1,Y_2,\cdots,Y_N\}$
+	,$N$表示总的像素，$Y_i\in\{0,1\}$则标签$Y$总共有$2^N$种取值。在$Y$的所有取值中，概率最大对应的取值
+	即为最优分割的结果。图像分割问题被为基于条件随机场的最大条件概率问题。根据吉布斯分布与条件随机场
+	的等效性\cite{Lafferty2001Conditional}，定义如下基于标签$Y$的能量函数：
+	\begin{equation}
+		E(Y|I) = \sum_{l}Y_lU(l)+\sum_{l,k}Y_lW_{l,k}Y_k
+	\end{equation}
+	其中一元项$U(l)=g(h,l)$表示第$l$个像素标签$Y_l$取值为1的损失，$h$表示图像特征，$W_{l,k}$表示标签$Y_l$和
+	标签$Y_k$同时出现的权重。给定一幅线虫图像$I$，对应的标签为Y的条件概率为:
+	\begin{equation}
+		P(Y|I)=\frac{1}{Z}\exp(-E(Y|I))
+	\end{equation}
+	其中$Z$为归一化项。通过平均场近似\cite{zheng2015conditional}的方法，标签$Y_l=1$可以通过以下迭代的方法求出：
+	\begin{equation}
+		\Phi(Y_l=1)_t=\sigma\Big(U(l)+\sum_{k}W_{l,k}\Phi(Y_k=1)_{t-1}\Big)
+	\end{equation}
+	其中$\Phi(Y_l=1)$表示$Y_l$取值为1的概率，$\sigma(a)=1/(1+\exp(-a))$表示 sigmoid 函数。$U(l)$通过基于图像特征$h$的卷积获得。
+	$\sum_{k}W_{l,k}\Phi_{t-1}$是通过$t-1$阶段的概率图$\Phi_{t-1}$与卷积核$W$的卷积操作实现的。在$t$时刻的概率图$\Phi_t$可以由如下公式计算：
+	\begin{equation}
+		\Phi_t=\mathscr{M}(U,W^k)=\begin{cases}
+						\sigma(W^k*U), \quad \quad \quad t=0\\
+						\sigma(W^k*\Phi_{t-1}+U), \quad t=1,2,3
+						\end{cases}
+	\end{equation}
+	其中$\mathscr{M}$表示基于共享权重的递归卷积，$W^k$表示共享卷积核，主要用于对相邻像素之间的空间
+	关系进行建模。本文中，我们使用了3次递归卷积实现条件随机场的近似。
+	
 	
 \subsection{网络结构的设计}
-
+	本文提出了一种用于线虫前景轮廓分割的基于条件随机场的卷积网络模型，图\ref{fig:chap5:arch}为对应的网络架构。
+	融合多种尺度的信息对分割任务来说是相当重要的(如：U-net网络\cite{ronneberger2015u}和SegNet网络\cite{badrinarayanan2015segnet}架构的设计)，
+	充分利用不同尺度的信息能够提高目标的定位精度从而减小分割误差，本文在分割网络架构的设计上也结合了多种尺度的
+	信息。在图\ref{fig:chap5:arch}中，网络的前半部分通过降采样操作引入新的分支，网络的后半部分通过上采样操作并与
+	上游的分支融合。网络输入张量的尺寸为$592\times800\times3$(代表一幅RGB彩色图像)，通过不断分支并降采样，网络
+	在最底层的分支上达到最小尺度(分辨率为:$37\times50$)。每次降采样都将分辨率降低为原来的一半，同时将特征通道数数扩大为
+	原来的两倍。最终网络与最上层的分支融合得到尺寸为$592\times800\times16$特征图，将特征图与上一章节介绍的条件随机场
+	模块相连接构成整个分割网络的结构。
+	\begin{figure}[thb]
+	  \centering
+	  \includegraphics[width=13cm]{figure/chap5/arch.jpg}
+	  \bicaption[这里将出现在插图索引中]
+		{分割网络结构图}
+		{Change in contour curvature}
+	  \label{fig:chap5:arch}
+	\end{figure}
+	\begin{figure}[htb]
+	  \centering
+	  \includegraphics[width=9cm]{figure/chap4/residualpooling.jpg}
+	  \bicaption[这里将出现在插图索引中]
+		{残差连接模块}
+		{Change in contour curvature}
+	  \label{fig:chap4:respool}
+	\end{figure}
+	残差网络\cite{he2016deep}能够在增加网络深度的同时使网络依然易于训练，更深的网络往往能够学习到
+	更加抽象的特征从而提高网络的性能。因此本文使用了如图\ref{fig:chap4:respool}所示的残差连接模块\cite{chu2017multi}，这种残差
+	模块包含三个连接通路。中间的通路由于使用了降采样，在卷积核尺寸保持不变的情况下，输出神经元的感受野将扩大到原来的两倍。
+	但由于使用了降采样，所以导致分辨率下降。但上下两条路径上包含高分辨率的信息。最后将这三个路径的输出叠加在一起作为残差
+	连接模块的输出。这种连接方式在扩大网络的感受野的同时依然保持原来的分辨率。
+	
 \subsection{网络模型的训练}
-
+	在线虫的实时跟踪任务中，神经网络模型的复杂度和实时性是需要关注的重点。太复杂的网络其推断时间耗时太长往往达不到
+	实时性的要求，因此必须要在网络结构的选取时加以考虑。而网络的训练和推断所消耗的时间的评估依赖于所采用的机器学习库
+	和网络模型运行的硬件平台。因此为了评估不同网络模型的复杂度和实时性，表\ref{tab:hardwareconfig}
+	列出了本文中所有网络模型运行的硬件平台。
+	\begin{table}[!hpb]
+	\centering
+	\bicaption[指向一个表格的表目录索引]
+    {算法运行的实验平台}
+    {A Table}
+	\label{tab:hardwareconfig}
+	\begin{tabular}{p{80pt}p{100pt}}
+	\toprule
+	平台参数 & 配置 \\
+	\midrule
+	操作系统 & Windows 10 家庭版\\
+	系统内存 & 8g \\
+	CPU & i5-6300HQ \\
+	GPU & GTX 950M \\
+	显存 & 4g \\
+	深度学习库 & Tensorflow \\
+	\bottomrule
+	\end{tabular}
+	\end{table}
+	
+	增强训练数据的多样性能够有效提高网络的泛化性能，特别是在较小的数据集上网络可能会出现过拟合的情况。为了
+	提高网络的泛化能力，在网络训练阶段本文对训练集进行了数据增强。本文首先对训练图片以一定概率随机地进行水平镜像翻转或
+	垂直镜像翻转，并将对应的标签做相同的变换。最后将训练图片加入一定量的高斯白噪声，以提高数据的多样性。
+	在batchsize参数的选择上，考虑到本文训练图片的分辨率较高(为$592\times800\times3$)以及
+	网络训练采用的硬件GPU显存较小(4g)，因此不能将batchsize设置过大，本文这里将batchsize设为1，即采用单样本
+	更新的方式训练网络。假设网络的最后一层输出是一张概率图设为$\Phi$，$y$为标签图(只包含0和1)。
+	公式\ref{eq:loss}表示网络训练的交叉熵损失,通过随机梯度下降的方式不断的调整网络的模型参数使交叉熵损失不断下降。
+	最终网络收敛到局部极小值或者全局最小值，训练损失将不会再下降。图\ref{fig:train_progress}表示训练过程中，训练
+	损失和像素准确率随迭代次数的变化。图中可以看出随着迭代次数的增加，训练损失不断减小，像素正确率不断增加。网络在第
+	1000次迭代后，网络基本已经收敛。
+		\begin{equation}
+		entropy\_loss = \sum_{i,j}y_{ij}\log \Phi_{ij} + (1-y_{ij})\log (1-\Phi_{ij}) \label{eq:loss}
+	\end{equation}
+	
+	\begin{figure}[!htp]    
+	\begin{minipage}[t]{0.5\linewidth}%设定图片下字的宽度，在此基础尽量满足图片的长宽    
+		\centering    
+		\includegraphics[width=1\linewidth]{figure/chap3/loss.jpg}    
+		\caption*{(a) 弯曲角的变化}%加*可以去掉默认前缀，作为图片单独的说明    
+		\label{fig:angle}    
+	\end{minipage}    
+	\begin{minipage}[t]{0.5\linewidth}%需要几张添加即可，注意设定合适的linewidth    
+		\centering    
+		\includegraphics[width=1\linewidth]{figure/chap3/acc.jpg}    
+		\caption*{(b) 摆动频率的变化}
+		\label{fig:freq}
+	\end{minipage}
+	\bicaption{线虫弯曲角度和摆动频率的变换}{An EPS and PDF demo with subcaptionbox}%n张图片共享的说明
+	\label{fig:train_progress}
+	\end{figure}
 \subsection{实验结果分析}
+\subsubsection{评价指标}
+	为了评估线虫轮廓前景分割网络的分割性能，需要一些量化指标来量化分割的结果。本文采用的三个
+	量化指标分别为：过分割率(Over Segmentation,OR)、欠分割率(Under Segmentation,UR)以及总体
+	分割误差率(Overall Error Rate,ER)\cite{Liu2006Set}。分别由公式\ref{eq:OR}、\ref{eq:UR}和\ref{eq:ER}计算。
+	其中$Q_p$表示目标像素被误分类为背景像素的数目，$U_p$为背景像素被误分类为目标像素的数目，$D_n$表示背景像素点
+	的数目，$D_p$表示目标像素点的数目。
+		\begin{equation}
+		OR = Q_p/D_p \label{eq:OR}
+		\end{equation}
+		\begin{equation}
+		UR = U_p/D_n \label{eq:UR}
+		\end{equation}
+		\begin{equation}
+		ER = (Q_p+U_p)/(D_p+D_n)\label{eq:ER}
+		\end{equation}
+\subsubsection{分割效果对比}
+	为了比较分析不同算法的前景轮廓分割效果，本小节我们将本章提出的基于条件随机场的卷积分割算法与传统的
+	前景轮廓提取方法进行了对比。图\ref{fig:comp_res}显示了不同算法的分割结果。从图中可以看出基于模糊C均值聚类的
+	分割方法和基于阈值分割的OTSU算法的分割结果存在大量的像素分类错误，从原图像可以看出，图像的底部部分的亮度
+	较高，但应该属于背景像素，这两种基于像素的分割方法都将这些区域分类为前景像素。另一方面，从原图看出线虫的轮廓中心处的
+	亮度较低，这两种算法都将这些区域的像素分类为背景，造成了线虫轮廓的不连续以及存在孔洞。虽然经过后处理步骤
+	可以针对单张图像过滤掉非线虫轮廓，以及运用形态学图像处理技术可以消除掉线虫轮廓中的空洞和不连续等缺陷，但在
+	线虫视频的自动化分析任务中，由于每一帧图像的噪声情况都不一样，因此很难确定一个全局的阈值。 基于高斯混合模型的
+	背景减除方法虽然比基于阈值的分割方法和基于聚类的分割方法分割结果有很大的改善，但线虫的轮廓依然存在不连续的
+	情况。基于背景减除的分割方法最大的不足在于其只能针对背景固定的视频，因此这种分割具有很大的局限性。
+	图\ref{fig:comp_res}(f)是本文不带条件随机场模块的卷积网络（去掉CRF模块，同时用$1\times1$的卷积将特征的
+	通道数变为1作为网络的输出）分割的结果。
+	从图中可以看出去掉CRF模块后，卷积分割网络由于没有考虑到空间中相邻像素的相关性，从而导致线虫轮廓的不连续，
+	分割性能较差。而条件随机场模块能够显著的改善线虫前景轮廓分割中的不连续等情况，与以上的方法相比，其分割性能
+	要优于其他的方法，而且其分割的性能不依赖于超参数的选择，具有很好的鲁棒性。
+	
+\begin{figure}[!htp]
+	  \centering
 
+	  \begin{subfigure}{\linewidth}
+		\centering
+		\begin{minipage}[b]{\linewidth}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/img/441.orgin.851.jpg}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/img/441.orgin.1051.jpg}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/img/441.orgin.1051.jpg}
+		\end{minipage}
+		\caption{线虫原图像}
+	  \end{subfigure}
+
+	 \begin{subfigure}{\linewidth}
+		\centering
+		\begin{minipage}[b]{\linewidth}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/label/441.orgin.1051.jpg}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/label/441.orgin.1051.jpg}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/label/441.orgin.1051.jpg}
+		\end{minipage}
+		\caption{分割标签}
+	  \end{subfigure}
+
+	 \begin{subfigure}{\linewidth}
+		\centering
+		\begin{minipage}[b]{\linewidth}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/test_otsu/441.orgin.1051.jpg}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/test_otsu/441.orgin.1051.jpg}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/test_otsu/441.orgin.1051.jpg}
+		\end{minipage}
+		\caption{OTSU阈值分割算法结果}
+	  \end{subfigure}
+
+	 \begin{subfigure}{\linewidth}
+		\centering
+		\begin{minipage}[b]{\linewidth}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/test_fcm/441.orgin.1051.jpg}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/test_fcm/441.orgin.1051.jpg}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/test_fcm/441.orgin.1051.jpg}
+		\end{minipage}
+		\caption{模糊C均值聚类算法分割结果}
+	  \end{subfigure}
+
+	  \begin{subfigure}{\linewidth}
+		\centering
+		\begin{minipage}[b]{\linewidth}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/test_bksub/441.orgin.1051.jpg}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/test_bksub/441.orgin.1051.jpg}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/test_bksub/441.orgin.1051.jpg}
+		\end{minipage}
+		\caption*{(e)混合高斯背景建模的分割算法结果}
+	  \end{subfigure}
+\end{figure}
+\begin{figure}[!htp]
+	\addtocounter{subfigure}{5}
+		\centering
+		\ContinuedFloat
+	  \begin{subfigure}{\linewidth}
+		\centering
+		\begin{minipage}[b]{\linewidth}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/test2/441.orgin.1051.jpg}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/test2/441.orgin.1051.jpg}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/test2/441.orgin.1051.jpg}
+		\end{minipage}
+		\caption*{(f)本文算法分割结果（没有条件随机场模块）}
+	  \end{subfigure}
+
+	  \begin{subfigure}{\linewidth}
+		\centering
+		\begin{minipage}[b]{\linewidth}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/test1/441.orgin.1051.jpg}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/test1/441.orgin.1051.jpg}
+		\includegraphics[width=0.33\linewidth,natwidth=800,natheight=600]{figure/chap3/test1/441.orgin.1051.jpg}
+		\end{minipage}
+		\caption*{(g)本文算法分割结果}
+	  \end{subfigure}
+	  \bicaption{线虫前景轮廓提取不同算法的分割结果}{An EPS and PDF demo with subfigure}
+	  \label{fig:comp_res}
+\end{figure}
+\subsubsection{分割性能的量化分析}
+	\begin{table}[htbp]
+	\centering
+	\bicaption[指向一个表格的表目录索引]
+    {不同分割方法的性能比较}
+    {A Table}
+	\label{tab:metrics}
+	\begin{tabular}{>{\centering}p{80pt}>{\raggedleft\arraybackslash}p{60pt}>{\raggedleft\arraybackslash}p{60pt}>{\raggedleft\arraybackslash}p{60pt}}
+	\toprule
+	算法&过分割率&欠分割率&总体误差\\
+	\midrule
+	本文算法 &12.29\% &0.01\% & 0.11\% \\
+	本文算法\\（无CRF模块）&26.93\% & 0.03\% &0.17\% \\
+	背景减除  &19.55\% & 0.02\%& 0.12\% \\
+	OTSU算法 &26.62\% & 2.12\% & 2.25\% \\
+	FCM 算法 &27.41\% & 2.15\% & 2.28\% \\
+	\bottomrule
+	\end{tabular}
+	\end{table}
+	为了定量的分析不同分割算法的性能，本文采用了三种性能指标对不同算法在测试集上分割的结果进行量化如表\ref{tab:metrics}所示。
+	从表中可以看出基于阈值分割的OTSU算法和基于聚类的FCM算法在过分割率、欠分割率以及总体误差三个指标上均表现较差。
+	另外，没有使用CRF的卷积分割网络在三个指标上的表现均弱于基于背景减除的分割方法。但在卷积网络后端加入CRF模块后，网络的分割性能
+	有了很大的提升，其分割性能要优于其他的分割算法，总体的像素误差下降到$0.11\%$。
+	
 \section{本章小结}

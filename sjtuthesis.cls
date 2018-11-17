@@ -60,11 +60,13 @@
 \RequirePackage{etoolbox}
 \RequirePackage[centering,a4paper,body={15cm,22.5cm}]{geometry} %设置版面
 \RequirePackage{fancyhdr}
+\RequirePackage{sidecap}
 \RequirePackage{pageslts}
 \RequirePackage[titles]{tocloft}
 \RequirePackage{mathtools,amsthm,amsfonts,amssymb,bm}
 \RequirePackage[defaultsups]{newtxtext}
 \RequirePackage{newtxmath}
+\RequirePackage{mathrsfs}
 \RequirePackage[opentype]{sourcecodepro}
 \RequirePackage{upgreek}
 \RequirePackage{wasysym}
