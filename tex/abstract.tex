@@ -17,24 +17,77 @@
 	不仅通量低而且还会引入误差。
 	
 	针对上述问题，本文首先搭建了一个基于微流控芯片的硬件平台，可以实现线虫
-	的简单培养以及为线虫在给定环境毒素下的暴露创造一个精确的微环境，由于线虫通体透明且由
-	PDMS制作的微流控芯片也是透明的，线虫的分割是整个系统中的难点，本文首先采用了背景减除的方法进行
-	线虫前景轮廓的提取。实验发现，该方法在较低背景噪声的情况下可以较好的分割线虫。但面对复杂的
-	背景时，该方法的鲁棒性出现显著的下降，导致后续线虫跟踪的丢失率显著增加。针对背景减除方法的不足，
-	本文提出了一种基于深度卷积网络的分割模型。通过实验对比，在我们标注的数据集上分割误差下降了xx。另外，
-	线虫的跟踪也是一个难点，由于线虫是非刚体其形态变化多种多样。为此，本文提出了一种简单有效的跟踪策略，
-	能过最近邻搜索匹配的方式实现线虫的跟踪。实验发现，在线虫轮廓分割较为完整的情况下，该跟踪方法
-	能够对线虫轮廓实现鲁棒的跟踪。利用跟踪的线虫轮廓，可以计算出线虫的体长、摆动频率和运动速度等生理特征。
-	最后，通过线虫和双氧水的相互作用展示了本文提出的基于微流控平台和自动化图像分析系统在毒理学研究中的
+	的简单培养以及为线虫在给定环境毒素下的暴露创造一个精确的微环境。由于线虫通体透明且由
+	PDMS制作的微流控芯片也是透明的，线虫的前景轮廓分割是整个系统中的难点。针对传统的图像分割算法
+	在线虫前景轮廓分割任务中存在的不足(如：面临鲁棒性差、依赖超参数选择和分割效果不理想等问题)。
+	本文提出了一种基于深度卷积网络和条件随机场的分割算法。通过与其他分割算法对比，表明本文提出的算法
+	能够显著地改善线虫前景轮廓分割的性能。在我们标注的线虫前景分割数据集上，本文提出的分割算法
+	在像素误差指标上达到0.11\%的分割精度。另外，当一个腔室中存在多个线虫时，多个线虫轮廓可能会纠缠在一起，
+	由于无法辨识单个线虫的轮廓，从而导致跟踪丢失。为了解决这一问题，本文提出了一种基于卷积神经网络的编解码
+	器架构，该模型有效的解决了单个线虫轮廓的解析问题。
+	由于线虫是非刚体其形态变化多种多样，线虫的跟踪也是一个难点。为此，本文提出了一种简单有效的跟踪策略，
+	通过最近邻搜索匹配的方式实现线虫的跟踪。实验发现，在线虫轮廓分割较为完整的情况下，该跟踪方法
+	能够对线虫轮廓实现鲁棒地跟踪。利用跟踪的线虫轮廓，可以计算出线虫的体长、摆动频率等生理特征。
+	最后，通过研究线性浓度梯度双氧水对线虫活性地影响，展示了本文提出的基于微流控平台和自动化图像分析系统在毒理学研究中的
 	应用前景。
 	
-\keywords{秀丽隐杆线虫; 微流控; 毒性评价; 生理监测}
+\keywords{秀丽隐杆线虫; 微流控; 药物筛选; 轮廓分割; 卷积网络}
 \end{abstract}
-
+	
 \begin{englishabstract}
+	Currently, the number of chemicals in the environment is increasing and posing a serious threat to people's health. 
+	How to conduct risk assessment of those chemicals scientifically is a hotspot and a difficult point in the public health field.
+	Cells or organs can be used  in  high throughput toxicity evaluation and screening,
+	but the results of the study cannot replace experiment in vivo.
+	Although the traditional animal experiments have great significance, 
+they have long cycle, high cost and limitations related to animal protection, 
+making it difficult to conduct high-throughput toxicity studies.
+The representative model of  Caenorhabditis elegans(C.elegans) has the characteristics of small size, short life cycle, simple structure and high gene conservation. 
+It is an important in-vivo research tool in the field of environmental exposure and toxicology research.
+The microfluidic system is matched with the size of the C.elegans. 
+Compared with the C.elegans experiment on the agar plate, 
+it has the advantages of small reaction system, 
+high throughput, automation and flexible operation.
+In the toxicological experiments of C.elegans, 
+body length and swing frequency are often used as important physiological indicators 
+for evaluating toxicity. Through manual observation, not only the flux is low but also the error is introduced.
 
-	Todo
-
-\englishkeywords{\large C. elegans, Microfludics, Toxicity evaluation, Physiological monitoring}
+In response to the above problems,
+ this paper first builds a hardware platform based on microfluidic chip, 
+ which can realize the simple cultivation of C.elegans and create 
+ a precise microenvironment for the exposure of C.elegans to a
+ given environmental toxin.
+ Since the C.elegans is transparent and the microfluidic
+ chip made by polydimethylsiloxane(PDMS) is also transparent, the foreground contour segmentation 
+ of the C.elegans is a difficult point in the whole system.
+ Aiming at the shortcomings of the traditional image segmentation algorithm 
+in the foreground segmentation task of the worm (such as: poor robustness, 
+dependence on hyperparameter selection and unsatisfactory segmentation), 
+this paper proposes a segmentation algorithm based on deep convolutional networks and conditional random fields.
+Compared with other segmentation algorithms, 
+it is shown that the proposed algorithm can significantly improve 
+the performance of C.elegans foreground contour segmentation.
+On the segmentation dataset of the C.elegans we have labeled, 
+the segmentation algorithm proposed in this paper achieves 
+a segmentation accuracy of 0.11\% on the pixel error index.
+In addition, when multiple C.elegans are present in one chamber, 
+multiple C.elegans contours may be entangled, resulting in loss of tracking
+ due to the inability to recognize the contours of individual C.elegans.
+In order to solve this problem, this paper proposes a 
+encode-decode architecture based on convolutional neural network, 
+which effectively solves the problem of parsing the contour of a single C.elegans
+.Because C.elegans are non-rigid and their morphological changes are diverse, C.elegans tracking is also a difficult point.
+This paper proposes a simple and effective tracking strategy to track the
+ C.elegans by nearest neighbor search.
+ The experiment found that the tracking method can achieve robust
+ tracking of the C.elegans under the condition that 
+ the foreground segmentation of the C.elegans is complete.
+ Using the traced contour of C.elegans, physiological characteristics such as 
+ body length and swing frequency of the C.elegans can be calculated.
+ Finally, by studying the effect of linear concentration gradient
+ hydrogen peroxide on C.elegans activity, the application prospects
+ of microfluidic platform and automated image analysis system in toxicology research are presented.
+ 
+\englishkeywords{\large C. elegans, Microfludics, Drug screening, Contour segmentation, Convolutional network}
 \end{englishabstract}
 

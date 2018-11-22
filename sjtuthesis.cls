@@ -60,7 +60,7 @@
 \RequirePackage{etoolbox}
 \RequirePackage[centering,a4paper,body={15cm,22.5cm}]{geometry} %设置版面
 \RequirePackage{fancyhdr}
-\RequirePackage{sidecap}
+
 \RequirePackage{pageslts}
 \RequirePackage[titles]{tocloft}
 \RequirePackage{mathtools,amsthm,amsfonts,amssymb,bm}
