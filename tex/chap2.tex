@@ -1,14 +1,18 @@
 \chapter{微流控线虫芯片的设计及硬件平台的搭建}
 \section{引言}
-	在传统的药物筛选过程中，往往是通过人工的方式在96孔板上配置不同浓度的化合物。然后将线虫暴露在不同浓度的化合物下，
-	观察并记录线虫在不同浓度化合物下的变化。这种人工稀释的方法不仅存在样品消耗大、通量低和操作繁琐等缺点，而且也不利于
-	观察。近年来，随着微流控技术的发展，一些研究者们提出了基于微流控技术的片上浓度稀释的方法。片上浓度梯度稀释的方法
-	不仅使反应体系减小十倍甚至百倍，而且极大的减少了试剂的消耗，节约了实验成本。虽然已经有“圣诞树”结构的被动式梯度
-	形成芯片的报道，但存在样品消耗大以及需要精确的流阻设计和流速调节。为了研究多种化合物的复合对线虫活性的影响，
+	
+	在传统的药物筛选过程中，往往是通过人工的方式在96孔板上配置不同浓度的化合物。
+	然后将线虫暴露在不同浓度的化合物下，观察并记录线虫在不同浓度化合物下的变化。
+	这种人工稀释的方法不仅存在样品消耗大、通量低和操作繁琐等缺点，而且也不利于
+	观察。近年来，随着微流控技术的发展，一些研究者们提出了基于微流控技术的片上浓度稀释的方法。
+	片上浓度梯度稀释的方法不仅使反应体系减小十倍甚至百倍，
+	而且极大的减少了试剂的消耗，节约了实验成本。虽然已经有“圣诞树”结构的被动式梯度
+	形成芯片的报道，但存在样品消耗大以及需要精确的流阻设计和流速调节。
+	为了研究多种化合物的复合对线虫活性的影响，
 	本文设计了一种基于振荡的线性梯度稀释的微流控芯片。且只需要一个气源即可通过振荡的方式
 	完整样品的快速稀释，并通过染料实验和荧光实验验证本文提出的线性浓度梯度芯片的可行性。
 	
-\section{材料与方法}
+\section{线虫芯片的设计与验证}
 \subsection{线虫梯度芯片的设计}
 \label{arch-design}
 \begin{figure}[htbp]
@@ -16,7 +20,7 @@
 	  \includegraphics[width=13cm]{figure/chap2/chip-arch.jpg}
 	  \bicaption[这里将出现在插图索引中]
 		{线性梯度稀释芯片结构}
-		{Change in contour curvature}
+		{Structure of Linear gradient dilution chip}
 	  \label{fig:chap2:chip-arch}
 	\end{figure}
 线虫梯度芯片的设计如图\ref{fig:chap2:chip-arch}所示，由两层PDMS管道组成。上层为流道层，下层为阀门层。
@@ -30,7 +34,7 @@
 	\centering
 	\bicaption[指向一个表格的表目录索引]
     {实验试剂与耗材}
-    {A Table}
+    {Experimental reagents and consumables}
 	\begin{tabular}{p{150pt}p{230pt}}
 	\toprule
 		光刻胶SU-83050 & 美国Microchem公司\\
@@ -76,7 +80,8 @@
 	\end{enumerate}
 \subsection{线虫梯度芯片的制作}
 	制作好芯片模具后，就可以利用芯片模具进行微流控芯片的制作，下面将介绍双层微流控芯片的制作流程。经过以下流程
-	最终完成的芯片其实物图如图\ref{fig:chap2:chip-fabric}所示。
+	最终完成的芯片其实物图如图\ref{fig:chap2:chip-fabric}所示，为了更好的显示芯片结构，芯片的四列腔室
+	都被打入不同颜色的染料。
 	\begin{enumerate}[label={\alph*)},font={\color{black!50!black}\bfseries}]
 	\item 将流道层硅片的背面用胶粘在一次性培养皿的底部，起到一个固定的作用。
 	\item 配制PDMS：按照20：1的比例，取20克RTV 615（A液）和1克固化剂（B液）混合搅拌均与，按照5：1的比例，
@@ -98,14 +103,14 @@
 	  \includegraphics[width=9cm]{figure/chap2/fabric-chip.jpg}
 	  \bicaption[这里将出现在插图索引中]
 		{线性梯度稀释芯片实物图}
-		{Change in contour curvature}
+		{fabricated linear gradient dilution chip}
 	  \label{fig:chap2:chip-fabric}
 	\end{figure}
 \section{基于振荡的梯度稀释方法}
 \subsection{振荡的理论机制}
 	在微流控芯片中，流体的雷诺系数Re变得很小，流体以层流的方法流动，
-	这使得微管道中的不同液体的混合变得非常缓慢。我们课题组提出了一种只需一个压力源的基于流体振荡的混合器\ref{cheng2018simple}，
-	这个设计管道没有出口，而是由封闭的空腔代替。当需要混合前两列腔室中的液体时，需要将第三列作为储气腔，
+	这使得微管道中的不同液体的混合变得非常缓慢。我们课题组提出了一种只需一个压力源的基于流体振荡的混合器\cite{cheng2018simple}，
+	振荡的时候需要在管道的一端构造一个封闭的空腔环境。当需要混合前两列腔室中的液体时，需要将第三列作为储气腔，
 	将第三列腔室右边的阀门关闭即可形成封闭的储气腔。当需要混合前三列腔室中的液体时可以将第四列腔室作为储气腔。
 	振荡的时候将九排腔室之间的阀门关闭，对其中一排腔室的受力分析可等效为图\ref{fig:force}，
 	其中$P_{atm}$、$P_{push}$和$P_{air}$分别表示大气压、外部施加的压强与大气压的差和储气腔中的气压。
@@ -119,7 +124,7 @@
 		\centering    
 		\includegraphics[width=1\linewidth]{figure/chap2/force2.jpg}    
 		\caption*{(a) 压缩过程受力分析}%加*可以去掉默认前缀，作为图片单独的说明    
-		\label{fig:angle}    
+		\label{fig:compress}    
 	\end{minipage}    
 	\begin{minipage}[t]{0.5\linewidth}%需要几张添加即可，注意设定合适的linewidth    
 		\centering    
@@ -135,9 +140,11 @@
 为验证振荡混合效果，我们使用染料及荧光进行验证。如图\ref{fig:before}所示，将第一列腔室打入红色染料，
 第二列腔室打入水，将第三列腔室作为振荡腔。在1号进样口施加一个周期为250ms压力值为0.05Mpa的气压，
 经过7分钟的振荡，染料已经充分的混合均匀。染料和水完全混合后的效果如图\ref{fig:after}所示，从上到下染料的颜色依次变淡。
-如不加振荡，两列液体以自由扩散方式混合，需要2～3个小时，可以看出，振荡方法对快速混合形成梯度有较好的效果。
-为验证梯度形成的准确性，我们将第一列腔室中的染料替代为浓度为0.1g/L 的荧光素钠溶液(pH=7)，
+如不加振荡，两列液体以自由扩散方式混合，需要2～3个小时，可以看出，振荡方法对快速混合形成梯度有较好的效果，
+大大加快了不同液体的混合速率。
+为了定量的验证梯度形成的准确性，我们将第一列腔室中的染料替代为浓度为0.1g/L 的荧光素钠溶液(pH=7)，
 最终得到0.01～0.09g/L的线性浓度梯度。图\ref{fig:chap2:fluence}为荧光素钠浓度与荧光强度之间的关系。
+图中蓝色的线表示线性拟合的结果，可以看出拟合结果的线性度较好。
 从而验证了基于微振荡原理的大规模梯度稀释是可行的，
 这种方式能够显著加快混合的速度并且只需要一个压力源即可完成振荡混合。
 为了验证这种振荡对线虫并无不良后果，我们将线虫打入第三列腔室，并在该参数下振荡，
@@ -148,42 +155,162 @@
 	  \begin{subfigure}{0.45\textwidth}
 		\centering
 		\includegraphics[width=1\linewidth]{figure/chap2/before.jpg}
-		\caption{压缩过程受力分析}
+		\caption{振荡前的芯片图 }
 		\label{fig:before}   
 	  \end{subfigure}
 		\hspace{1em}
 	  \begin{subfigure}{0.45\textwidth}
 		\centering
 		\includegraphics[width=1\linewidth]{figure/chap2/after.png}
-		\caption{解压缩过程受力分析}
+		\caption{振荡结束后的芯片图}
 		\label{fig:after}
 	  \end{subfigure}
-	  \bicaption{液体振荡过程受力分析}{ Stress analysis of liquid oscillation process}
-	  \label{fig:force}
+	  \bicaption{染料实验结果}{Dye experiment results}
+	  \label{fig:oscillation}
 	\end{figure}
-	% \begin{figure}[!htp]    
-	% \begin{minipage}[t]{0.5\linewidth}%设定图片下字的宽度，在此基础尽量满足图片的长宽    
-		% \centering    
-		% \includegraphics[width=1\linewidth]{figure/chap2/before.jpg}    
-		% \caption{(a) 压缩过程受力分析}%加*可以去掉默认前缀，作为图片单独的说明    
-		% \label{fig:before}    
-	% \end{minipage}    
-	% \begin{minipage}[t]{0.5\linewidth}%需要几张添加即可，注意设定合适的linewidth    
-		% \centering    
-		% \includegraphics[width=1\linewidth]{figure/chap2/after.png}    
-		% \caption{(b) 解压缩过程受力分析}
-		% \label{fig:after}
-	% \end{minipage}
-	% \bicaption{液体振荡过程受力分析}{ Stress analysis of liquid oscillation process}%n张图片共享的说明
-	% \label{fig:force}
-	% \end{figure}
-	
+
 	\begin{figure}[htbp]
 	  \centering
 	  \includegraphics[width=9cm]{figure/chap2/fluence.jpg}
 	  \bicaption[这里将出现在插图索引中]
-		{线性梯度稀释芯片实物图}
-		{Change in contour curvature}
+		{荧光实验结果}
+		{Fluorescence experiment results}
 	  \label{fig:chap2:fluence}
 	\end{figure}
+\section{阀门控制系统搭建}
+	目前，双层的微流控芯片一般由下层的阀门层和上层的流道层组成。阀门层的PDMS薄膜通常很薄，当向气阀通道施加一定的
+	气压(大约30psig)，阀门层的薄膜会向上顶起。由于上层的流道和下层的气阀通道是上下交叉的，通过控制向气阀通道施加
+	气压，便可以控制上层流道的通断。另一方面，线虫的压力进样和芯片的振荡都需要对进样口进行气压控制。基于以上需求
+	，本课题组开发了自动化阀门控制系统，图\ref{fig:flow_chart}为该系统的连接示意图。整个系统由五个模块构成，
+	我们采用了750W-18L小型空压机作为气泵模块为整个系统提供气压输出，将Arduino作为微控制器控制电磁阀的输出。
+	Arduino由运行在电脑上的上位机程序控制。
+
+	\begin{figure}[!htp]
+    \centering
+	
+    \begin{tikzpicture}[node distance=2.5cm,auto]
+	\tikzstyle{process} = [rectangle,rounded corners,thick,minimum width = 3cm,text width=3cm,inner sep=2pt,minimum height =1.7cm, text centered, draw = black]
+    \node (pc) [process] {电脑};
+    \node (mcu) [process, below of=pc] {微控制器及运算放大器};
+    \node (valves) [process, below of=mcu] {电磁阀};
+    \node (pump) [process, right of=valves,node distance=4cm] {气泵};
+    \node (chip) [process, left of=valves,node distance=4cm] {微流控芯片};
+    %连接具体形状
+    \draw [arrow](pc) -- (mcu);
+    \draw [arrow](mcu) -- (valves);
+    \draw [arrow](valves) -- (chip);
+    \draw [arrow](pump) -- (valves);
+	\end{tikzpicture}
+    \bicaption{自动化阀门控制系统}{Automated valve control system}
+    \label{fig:flow_chart}
+	\end{figure}
+\section{高速视频采集程序的设计}
+	线虫视频的高速采集对线虫摆动频率的估计是至关重要的一步。根据采样定理，采集的视频帧率至少是线虫摆动频率的两倍。
+	除了采样频率的要求外，视频的分辨率等因素同样影响后续线虫图像处理的难度。基于以上考虑，本文选取鑫图公司的DigiRetina 16
+	 COMS相机作为线虫视频的采集模块。其可以通过USB3.0高速传输接口与电脑进行高速图像数据传输，同时该相机在放大倍率20
+	 倍以下的显微成像中，也可以获得分辨率优异的显微图像，另外其内置两个FPGA双核处理器分别用于高清图像处理和
+	 图像输出控制。该相机较好满足了本文对线虫视频采集模块的要求。为了提高视频采集的帧率，本文基于该相机的SDK，开发基于多线程
+	 的视频采集程序。
+	 
+	对DigiRetina 16相机设备的操作通常分为7个步骤，其操作流程如图\ref{fig:flow_chart1}所示。设备初始化阶段主要负责和相机驱动通信并对其
+	初始化，在图像采集之前，需要在内存中开辟内存空间用于保存采集的图像数据，所需内存的大小与图像的分辨率有关。
+	DigiRetina 16相机支持多种分辨率的图像采集，分辨率可以在打开设备后进行设置。在结束采集后，需要关闭设备并
+	释放内存空间。
+	\begin{figure}[!htp]
+    \centering
+    \begin{tikzpicture}[node distance=2.5cm,auto]
+	\tikzstyle{process} = [rectangle,rounded corners,thick,minimum width = 3cm,text width=3cm,inner sep=2pt,minimum height =1.5cm, text centered, draw = black]
+    \node (init) [process] {设备初始化};
+    \node (allocate) [process, right of=init,node distance=4cm] {分配内存空间};
+    \node (open) [process, right of=allocate,node distance=4cm] {打开设备};
+    \node (op) [process, below of=open,yshift=0.5cm] {图像采集};
+    \node (close) [process, below of=op,yshift=0.5cm] {关闭设备};
+	\node (free) [process, left of=close,node distance=4cm] {释放内存空间};
+	\node (exit) [process, left of=free,node distance=4cm] {释放驱动};
+    %连接具体形状
+    \draw [arrow](init) -- (allocate);
+    \draw [arrow](allocate) -- (open);
+    \draw [arrow](open) -- (op);
+    \draw [arrow](op) -- (close);
+	\draw [arrow](close) -- (free);
+	\draw [arrow](free) -- (exit);
+	\end{tikzpicture}
+    \bicaption{相机设备的操作流程}
+	{Camera device operation flow}
+    \label{fig:flow_chart1}
+	\end{figure}
+	\begin{figure}[!htp]
+    \centering
+    \begin{tikzpicture}[node distance=2.5cm,auto]
+	\tikzstyle{rect1} = [rectangle,rounded corners,thick,minimum width = 3cm,fill=green!30,
+	text width=3cm,inner sep=2pt,minimum height =2cm, text centered, draw = black]
+    \tikzstyle{rect2} = [rectangle,rounded corners,thick,minimum width = 3cm,fill=orange!30,
+	text width=3cm,inner sep=2pt,minimum height =2cm, text centered, draw = black]
+	\tikzstyle{label} = [rectangle,rounded corners,minimum width = 7cm,text width=7cm,inner sep=2pt,minimum height =1.5cm, text centered, draw = black]
+	\tikzstyle{arrow1} = [->, >=latex', shorten >=1pt, thick]
+	\tikzstyle{arrow2} = [->, >=latex', shorten >=1pt]
+	\node (node1) [rect1] {等待一帧图像,时间开销T1};
+    \node (node2) [rect1, right of=node1,node distance=4cm] {从相机设备内存到电脑内存的复制,时间开销T2};
+    \node (node3) [rect2, right of=node2,node distance=4cm] {图像处理程序从电脑内存中读取图像,时间开销T3};
+    \node (node4) [rect2, right of=node3,node distance=4cm] {处理一帧图像,时间开销T4};
+    %连接具体形状
+    \draw [arrow1](node1) -- (node2);
+    \draw [arrow1](node2) -- (node3);
+    \draw [arrow1](node3) -- (node4);
+    % \draw [arrow2](node1) -- (label1);
+	% \draw [arrow2](node2) -- (label2);
+	% \draw [arrow2](node3) -- (label3);
+	% \draw [arrow2](node4) -- (label4);
+	\end{tikzpicture}
+    \bicaption{相机设备的操作流程}
+	{Automated valve control system}
+    \label{fig:image_process_flow}
+	\end{figure}
+	
+	一帧图像从采集到被处理共分为4步骤，如图\ref{fig:image_process_flow}所示，各部分的时间开销
+	分别用$T_1,T_2,T_3,T_4$表示，下面分别对各部分时间开销进行详细分析：
+	\begin{description}
+    \item[时间开销T1:] 曝光时间和图像分辨率影响这部分的时间开销，增加曝光时间或提高图像采集的分辨率
+	都会使这部分的时间开销变大。
+    \item[时间开销T2:] 相机驱动程序负责将相机缓存中的图像数据传送到电脑上的一块内存区域。
+	这个内存块在相机初始化时开辟，释放相机设备时自动释放，图像采集的分辨率、USB线的长度会影响时间开销。
+    \item[时间开销T3:] 图像处理程序从上一步的内存区域读取图像数据。
+					图像分辨率、内存拷贝数据的速度等会影响时间开销
+	\item[时间开销T4:] 处理一帧图像的时间对不同的图像处理程序而言是不同，这部分的时间开销与具体的图像处理算法
+	有关。对于高速视频采集任务而言，这里的时间开销指的是写入硬盘时间。
+	\end{description}
+	
+	\begin{figure}[!htp]
+    \centering
+    \begin{tikzpicture}[node distance=2.5cm,auto]
+	\tikzstyle{rect1} = [rectangle,rounded corners,thick,minimum width = 3cm,fill=green!30,
+	text width=3cm,inner sep=2pt,minimum height =2cm, text centered, draw = black]
+    \tikzstyle{rect2} = [rectangle,rounded corners,thick,minimum width = 3cm,fill=orange!30,
+	text width=3cm,inner sep=2pt,minimum height =2cm, text centered, draw = black]
+	\tikzstyle{label} = [rectangle,rounded corners,minimum width = 7cm,text width=7cm,inner sep=2pt,minimum height =1.5cm, text centered, draw = black]
+	\tikzstyle{arrow1} = [->, >=latex', shorten >=1pt, thick]
+	\tikzstyle{arrow2} = [->, >=latex', shorten >=1pt]
+	\node (node1) [rect1] {等待一帧图像,时间开销T1};
+    \node (node2) [rect1, right of=node1,node distance=4cm] {从相机设备内存到电脑内存的复制,时间开销T2};
+    \node (node3) [rect2, right of=node2,node distance=4cm] {图像处理程序从电脑内存中读取图像,时间开销T3};
+    \node (node4) [rect2, right of=node3,node distance=4cm] {处理一帧图像,时间开销T4};
+    %连接具体形状
+    \draw [arrow1](node1) -- (node2);
+    \draw [arrow1](node2) -- (node3);
+    \draw [arrow1](node3) -- (node4);
+    % \draw [arrow2](node1) -- (label1);
+	% \draw [arrow2](node2) -- (label2);
+	% \draw [arrow2](node3) -- (label3);
+	% \draw [arrow2](node4) -- (label4);
+	\end{tikzpicture}
+    \bicaption{相机设备的操作流程}
+	{Automated valve control system}
+    \label{fig:image_process_flow}
+	\end{figure}
+	
+	
+	
 \section{本章小结}
+	本章的主要工作是为本文提出的药物筛选平台搭建了一个硬件平台。首先，介绍了基于振荡原理的线性梯度稀释芯片的结构设计。
+	本章还介绍了微流控芯片的制作工艺。然后介绍了振荡混合的理论机制，并在最后通过染料实验和荧光实验证明了线性
+	梯度稀释芯片设计的合理性，实验结果显示基于振荡的混合方式能够有效的缩短不同液体的混合时间。

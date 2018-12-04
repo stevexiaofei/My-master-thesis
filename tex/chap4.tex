@@ -1,21 +1,31 @@
 \chapter{基于深度卷积网络的线虫轮廓解析}
 \section{引言}
-	多线虫跟踪问题中，多线虫轮廓之间相互遮挡是造成线虫跟踪丢失的主要原因，是实现线虫长期跟踪的关键。
-	如图\ref{fig:multiworm}所示，是一张经过前景轮廓提取后得到的一幅二值化图片，图中线虫轮廓之间出现严重的相互遮挡的情况
-	。虽然人眼可以很轻松的辨别出图中所有单个线虫的轮廓，但自动化地线虫轮廓解析却十分困难，尽管深度学习在图像分割任务中取得了很大的成功，
+	多线虫跟踪问题中，多线虫轮廓之间相互纠缠是造成线虫跟踪丢失的主要原因，是实现单个线虫长期跟踪的关键。
+	如图\ref{fig:multi-worms}所示，是一张经过线虫前景轮廓分割后得到的一幅二值化图片，
+	图中线虫轮廓之间出现严重的相互遮挡的情况，多个单线虫轮廓融合为一个连通域
+	。虽然人眼可以很轻松的辨别出图中所有单个线虫的轮廓，但自动化地解析出单个线虫的轮廓却十分困难，尽管深度学习在图像分割任务中取得了很大的成功，
 	但线虫轮廓的解析不同于图像分割，因此不能直接转为一个端到端的学习问题。
-	本文提出了一种基于深度卷积网络的线虫轮廓解析的方法尝试解决这一问题，并探讨了多种网络结构的设计对识别性能的影响。
-	\begin{figure}[h]
-	  \centering
-	  \includegraphics[width=7cm]{figure/chap4/multi-worm.jpg}
-	  \bicaption[这里将出现在插图索引中]
-		{多线虫轮廓相互遮挡图片}
-		{Change in contour curvature}
-	  \label{fig:multiworm}
+	本文提出了一种基于深度卷积网络的线虫轮廓解析算法尝试解决这一问题，并探讨了多种网络结构的设计对识别性能的影响。
+	\begin{figure}[!htp]    
+	\begin{minipage}[t]{0.49\linewidth}%设定图片下字的宽度，在此基础尽量满足图片的长宽    
+		\centering    
+		\includegraphics[width=1\linewidth]{figure/chap4/multi-worm.jpg}    
+		%\caption*{(a) 训练损失随迭代次数的变化}%加*可以去掉默认前缀，作为图片单独的说明    
+		\label{fig:angle}    
+	\end{minipage}    
+	\begin{minipage}[t]{0.49\linewidth}%需要几张添加即可，注意设定合适的linewidth    
+		\centering    
+		\includegraphics[width=1\linewidth]{figure/chap4/multi-worm1.jpg}    
+		%\caption*{(b) 像素准确率随迭代次数的变化}
+		\label{fig:freq}
+	\end{minipage}
+	\bicaption{多线虫轮廓相互纠缠示例}
+	{Example of multi-worm entangled with each other}%Multi-lineworm contours entangled with each other
+	\label{fig:multi-worms}
 	\end{figure}
-
+	
 \section{线虫轮廓解析方法介绍}
-	本文提出的线虫轮廓解析方法的关键在于设计了一个只对位于图片中央的线虫轮廓敏感的神经网络，而对非图片中央位置的线虫轮廓不敏感。当输入
+	本文提出的线虫轮廓解析算法的关键在于设计了一个只对位于图片中央的线虫轮廓敏感的神经网络，而对非图片中央位置的线虫轮廓不敏感。当输入
 	一幅包含多线虫轮廓的前景图像时，网络的输出为中央线虫轮廓的图像。
 	形式化的描述如下：假设一幅图片中包含N个线虫轮廓，定义一个集合$E =\{e_0,e_1,\dots,e_N\}$,其中$e_0$表示轮廓位于图片
 	中央的线虫，$e_i$包含线虫重心坐标、轮廓以及方向等信息。$I(E)=R(\{e_0,e_1,\dots,e_N\};\xi)$表示由集合E渲染得到的包含N个线虫的图片，R表示
