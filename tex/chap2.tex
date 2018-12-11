@@ -12,7 +12,7 @@
 	本文设计了一种基于振荡的线性梯度稀释的微流控芯片。且只需要一个气源即可通过振荡的方式
 	完整样品的快速稀释，并通过染料实验和荧光实验验证本文提出的线性浓度梯度芯片的可行性。
 	
-\section{线虫芯片的设计与验证}
+\section{双层线虫梯度芯片的设计及制作}
 \subsection{线虫梯度芯片的设计}
 \label{arch-design}
 \begin{figure}[htbp]
@@ -106,7 +106,6 @@
 		{fabricated linear gradient dilution chip}
 	  \label{fig:chap2:chip-fabric}
 	\end{figure}
-\section{基于振荡的梯度稀释方法}
 \subsection{振荡的理论机制}
 	在微流控芯片中，流体的雷诺系数Re变得很小，流体以层流的方法流动，
 	这使得微管道中的不同液体的混合变得非常缓慢。我们课题组提出了一种只需一个压力源的基于流体振荡的混合器\cite{cheng2018simple}，
@@ -177,6 +176,54 @@
 		{Fluorescence experiment results}
 	  \label{fig:chap2:fluence}
 	\end{figure}
+\section{单层侧向阀门线虫培养芯片的设计及制作}
+\subsection{单层阀门线虫培养芯片的设计}
+\label{subsec:chipdesign}
+	\begin{figure}[htbp]
+	  \centering
+	  \includegraphics[width=9cm]{figure/chap2/arch-chip.png}
+	  \bicaption[这里将出现在插图索引中]
+		{单层阀门线虫培养芯片}
+		{Single layer lateral valve chip for  worm culture}
+	  \label{fig:chap2:fluence}
+	\end{figure}
+\subsection{单层阀门芯片模具的制作}
+	下面开始介绍单层阀门芯片模具的制作工艺流程。
+	\begin{enumerate}[label={\alph*)},font={\color{black!50!black}\bfseries}]
+	\item 根据芯片结构的尺寸设计运用AutoCAD绘图软件绘制芯片的二维结构并制作掩模版。
+	\item 为了使光刻胶和硅片更容易结合，必须充分去除硅片的水分。将单面抛光的3寸硅片放进
+	$180^\circ C$烘箱中恒温$2\sim3$个小时。
+	\item 将硅片从烘箱中取出，待其恢复到室温后，用氮气将硅片表面的杂质吹掉使硅片表面保持干净。
+	用光刻胶AZ-4903倒在硅片的中心出，使其自然铺开慢慢覆盖硅片表面。然后5000rpm的转速旋涂30s得到胶层厚度
+	大约为1um。
+	\item 为了去除光刻胶中的有机溶剂并使光刻胶固定需要经过前烘，将涂有光刻胶的硅片放入烘箱中。将烘箱的温度
+	缓慢升至$65^\circ C$，恒温30min。然后继续将温度升至$90^\circ C$，再恒温30min，最后慢慢将烘箱温度降至
+	室温。
+	\item 将硅片放入光刻机中，曝光前，先打开光刻机汞灯预热10min分钟。将掩模版放在硅片上面并中心对齐，根据
+	光刻机的厚度调整好曝光时间，经过曝光处理后，将可掩模上的图案转移到光刻胶上。
+	\item 将经过曝光处理的硅片放入烘箱中逐渐升温至$65^\circ C$并恒温15min，然后再逐渐升温至$95^\circ C$
+	恒温40min，最后慢慢将温度降到室温。
+	\item 经过后烘步骤，再用对应的显影液对硅片进行显影，得到清晰的图形后再用氮气将硅片表面吹干。
+	\item 将硅片放入深硅刻蚀机中，进行干法刻蚀。光刻胶覆盖的区域将不会被刻蚀，从而可以将掩模板上的芯片
+	图案转移到硅片表面。注意根据腔室的高度，控制好刻蚀的厚度。
+	\item 为了使PDMS芯片的制作过程中，PDMS层容易从模具上揭下来，需要对硅片表面进行硅烷化处理。
+	将硅片放入一次性的培养皿中，在硅片旁的滤纸上滴一滴硅烷化试剂，通过蒸发沉淀的方式完成硅烷化处理。
+	\end{enumerate}
+\subsection{单层阀门芯片的制作}
+	将PDMS浇筑在芯片的模具上待其固化，即可完成
+	\begin{enumerate}[label={\alph*)},font={\color{black!50!black}\bfseries}]
+	\item 将硅片模具固定在一次性的培养皿的底部。
+	\item 配置PDMS混合液：按照10：1的比例，取20克的PDMS(Sylgard 184)A液和2克的固化剂(B液)混合搅拌均匀，
+	并将两种比例的混合液放入真空皿中抽真空以排出液体中的气泡，不断地抽气放气直到液体呈现澄清状。
+	\item 将PDMS浇筑在放有硅片模具的培养皿中，浇筑厚度约为5mm，重新放回真空皿中抽出芯片表面的气泡。
+	\item 将培养皿放入$75^\circ C$的烘箱中恒温一个小时使PDMS得以固化。
+	\item 从烘箱中取出芯片模具，待其自然冷却，用手术刀将PDMS层从模具上揭下来。按照芯片上的图案用PDMS切成方形，
+	并在所有进口、出口处打孔。
+	\item 将芯片和干净的玻璃片一起放入氧等离子体去胶机中处理40 秒后，将芯
+片和玻璃贴合在一起并放入$80^\circ C$的烘箱中恒温2小时，加强键合效果。
+	\end{enumerate}
+\subsection{单层侧向阀门线虫固定芯片的测试}
+
 \section{阀门控制系统搭建}
 	目前，双层的微流控芯片一般由下层的阀门层和上层的流道层组成。阀门层的PDMS薄膜通常很薄，当向气阀通道施加一定的
 	气压(大约30psig)，阀门层的薄膜会向上顶起。由于上层的流道和下层的气阀通道是上下交叉的，通过控制向气阀通道施加
@@ -262,8 +309,8 @@
 	% \draw [arrow2](node3) -- (label3);
 	% \draw [arrow2](node4) -- (label4);
 	\end{tikzpicture}
-    \bicaption{相机设备的操作流程}
-	{Automated valve control system}
+    \bicaption{从图像采集到图像处理过程的时间开销分析}
+	{Time consumption analysis from image acquisition to image processing}
     \label{fig:image_process_flow}
 	\end{figure}
 	
@@ -275,41 +322,90 @@
     \item[时间开销T2:] 相机驱动程序负责将相机缓存中的图像数据传送到电脑上的一块内存区域。
 	这个内存块在相机初始化时开辟，释放相机设备时自动释放，图像采集的分辨率、USB线的长度会影响时间开销。
     \item[时间开销T3:] 图像处理程序从上一步的内存区域读取图像数据。
-					图像分辨率、内存拷贝数据的速度等会影响时间开销
+					图像分辨率、内存拷贝数据的速度等会影响这部分的时间开销。
 	\item[时间开销T4:] 处理一帧图像的时间对不同的图像处理程序而言是不同，这部分的时间开销与具体的图像处理算法
 	有关。对于高速视频采集任务而言，这里的时间开销指的是写入硬盘时间。
 	\end{description}
-	
-	\begin{figure}[!htp]
+	从一帧图像的采集到处理也可以分成图像采集阶段(对应图\ref{fig:image_process_flow}前两个部分)和图像处理阶段
+	(对应图\ref{fig:image_process_flow}后两个部分)。如图\ref{fig:comparison} (b)所示，
+	为了加速视频采集的帧率，本文采用了两个独立的线程分别负责
+	图像的采集和将图像写入硬盘，这样可以将这两个任务并行，一帧图像从采集到写入硬盘平均所消耗的时间取决于
+	图像采集和硬盘写入两者所消耗时间的最小值，公式\ref{eq:paparell}表示多线程模式下视频采集帧率。而在单线程模式下，这两个任务是顺序执行的，一帧图像从采集到写入
+	硬盘平均所消耗的时间取决于图像采集和硬盘写入两者消耗时间之和，公式\ref{eq:squential}表示单线程模式下视频采集
+	帧率。多线程视频采集相较于单线程视频采集的加速比由公式\ref{eq:ratio}表示。
+	\begin{align}
+		&\text{多线程下视频采集帧率}=\frac{1}{\min(T_1+T_2,T_3+T_4)} \label{eq:paparell}\\
+		&\text{单线程下视频采集帧率}=\frac{1}{T_1+T_2+T_3+T_4} \label{eq:squential}\\
+		&\text{加速比}=\frac{T_1+T_2+T_3+T_4}{\min(T_1+T_2,T_3+T_4)} \label{eq:ratio}
+	\end{align}
+	\begin{figure}[h]
     \centering
+	\begin{minipage}{14cm}
+	\centering
     \begin{tikzpicture}[node distance=2.5cm,auto]
-	\tikzstyle{rect1} = [rectangle,rounded corners,thick,minimum width = 3cm,fill=green!30,
-	text width=3cm,inner sep=2pt,minimum height =2cm, text centered, draw = black]
-    \tikzstyle{rect2} = [rectangle,rounded corners,thick,minimum width = 3cm,fill=orange!30,
-	text width=3cm,inner sep=2pt,minimum height =2cm, text centered, draw = black]
-	\tikzstyle{label} = [rectangle,rounded corners,minimum width = 7cm,text width=7cm,inner sep=2pt,minimum height =1.5cm, text centered, draw = black]
-	\tikzstyle{arrow1} = [->, >=latex', shorten >=1pt, thick]
-	\tikzstyle{arrow2} = [->, >=latex', shorten >=1pt]
-	\node (node1) [rect1] {等待一帧图像,时间开销T1};
-    \node (node2) [rect1, right of=node1,node distance=4cm] {从相机设备内存到电脑内存的复制,时间开销T2};
-    \node (node3) [rect2, right of=node2,node distance=4cm] {图像处理程序从电脑内存中读取图像,时间开销T3};
-    \node (node4) [rect2, right of=node3,node distance=4cm] {处理一帧图像,时间开销T4};
-    %连接具体形状
-    \draw [arrow1](node1) -- (node2);
-    \draw [arrow1](node2) -- (node3);
-    \draw [arrow1](node3) -- (node4);
-    % \draw [arrow2](node1) -- (label1);
-	% \draw [arrow2](node2) -- (label2);
-	% \draw [arrow2](node3) -- (label3);
-	% \draw [arrow2](node4) -- (label4);
+	\tikzstyle{rect1} = [rectangle,rounded corners,thick,minimum width =1cm,fill=green!30,
+	text width=1cm,inner sep=2pt,minimum height =2cm, text centered, draw = black]
+    \tikzstyle{rect2} = [rectangle,rounded corners,thick,minimum width =2cm,fill=orange!30,
+	text width=1cm,inner sep=2pt,minimum height =2cm, text centered, draw = black]
+	\node (node1) [rect1] {图像采集};
+    \node (node2) [rect2, right of=node1,node distance=1.68cm] {图像处理};
+    \node (node3) [rect1, right of=node2,node distance=1.68cm] {图像采集};
+    \node (node4) [rect2, right of=node3,node distance=1.68cm] {图像处理};
+	\node (node5) [rect1, right of=node4,node distance=1.68cm] {图像采集};
+    \node (node6) [rect2, right of=node5,node distance=1.68cm] {图像处理};
+	\node (node7) [rect1, right of=node6,node distance=1.68cm] {图像采集};
+    \node (node8) [rect2, right of=node7,node distance=1.68cm] {图像处理};
 	\end{tikzpicture}
-    \bicaption{相机设备的操作流程}
-	{Automated valve control system}
-    \label{fig:image_process_flow}
+	\caption*{(a) 单线程下任务顺序执行}
+	\end{minipage}
+	\begin{minipage}{14cm}
+	\centering
+    \begin{tikzpicture}[node distance=2.5cm,auto]
+	\tikzstyle{rect1} = [rectangle,rounded corners,thick,minimum width =1cm,fill=green!30,
+	text width=1cm,inner sep=2pt,minimum height =2cm, text centered, draw = black]
+    \tikzstyle{rect2} = [rectangle,rounded corners,thick,minimum width =2cm,fill=orange!30,
+	text width=1cm,inner sep=2pt,minimum height =2cm, text centered, draw = black]
+
+    \node (node2) [rect2] {图像处理};
+    \node (node4) [rect2, right of=node2,node distance=2.05cm] {图像处理};
+    \node (node6) [rect2, right of=node4,node distance=2.05cm] {图像处理};
+    \node (node8) [rect2, right of=node6,node distance=2.05cm] {图像处理};
+	\node (node3) [rect1, below of=node2,node distance=2.cm,xshift=-0.45cm] {图像采集};
+	\node (node9) [rect1, below of=node2,node distance=2.cm,xshift=-1.6cm] {图像采集};
+	\node (node5) [rect1, below of=node4,node distance=2.cm,xshift=-0.45cm] {图像采集};
+	\node (node7) [rect1, below of=node6,node distance=2.cm,xshift=-0.45cm] {图像采集};
+	\node (node1) [rect1, below of=node8,node distance=2.cm,xshift=-0.45cm] {图像采集};
+	\end{tikzpicture}
+	\caption*{(b) 多线程下任务并行}
+	\end{minipage}
+    \bicaption{单线程和多线程模式下时间开销对比}
+	{Time overhead comparison in single-threaded and multi-threaded mode}
+    \label{fig:comparison}
 	\end{figure}
 	
-	
-	
+	为研究不同采集分辨率对视频采集帧率的影响，本文测试在不同采集分辨率情况下，各部分时间开销的变化，
+	表\ref{tab:resolutions}显示了本文的测试结果。结果显示分辨率提高对各部分的时间开销均有显著影响，在
+	同一分辨率下，多线程视频采集相较于单线程视频采集其帧率均有大幅提高。且随着采集分辨率的提高，加速效果越明显。
+	\begin{table}[thbp]
+	\centering
+	\bicaption[指向一个表格的表目录索引]
+    {不同分辨率对视频采集帧率的影响}
+    {The effect of different resolutions on the video capture frame rate}
+	\label{tab:resolutions}
+	\begin{tabular}{p{80pt}p{80pt}p{80pt}p{80pt}}
+	\toprule
+	分辨率 & $4608\times3456$ & $2304\times1728$ & $1600\times1200$ \\
+	\midrule
+	T1     & 192ms & 38.07ms & 39.12ms  \\
+	T2     & 7.7ms & 1.84ms & 0.772ms \\
+	T3		& 7.9ms & 2.28ms & 0.773ms \\
+	T4 		& 272.4ms & 22.89ms & 16.81ms \\
+	多线程帧率 & 3.5frames/sec & 25.0frames/sec & 25.0frames/sec \\
+	单线程帧率 & 2.0frames/sec  &15.0frames/sec &  17.4frames/sec \\
+	加速比		&  1.75		  &   1.67        &  1.44 \\
+	\bottomrule
+	\end{tabular}
+	\end{table}
 \section{本章小结}
 	本章的主要工作是为本文提出的药物筛选平台搭建了一个硬件平台。首先，介绍了基于振荡原理的线性梯度稀释芯片的结构设计。
 	本章还介绍了微流控芯片的制作工艺。然后介绍了振荡混合的理论机制，并在最后通过染料实验和荧光实验证明了线性
