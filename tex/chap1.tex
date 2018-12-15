@@ -41,7 +41,7 @@
 	  \includegraphics[width=14cm]{figure/chap1/Celegans.jpg}
 	  % \hspace{1cm}
 	  % \includegraphics[width=4cm]{example/sjtulogo.jpg}
-	  \bicaption[这里将出现在插图索引中]
+	  \bicaption
 		{秀丽隐杆线虫解剖图}
 		{Anatomy of adult C.elegans.}
 	  \label{fig:Celegans}
@@ -75,7 +75,7 @@
 	  \includegraphics[width=8cm]{figure/chap1/lifecycle.jpg}
 	  % \hspace{1cm}
 	  % \includegraphics[width=4cm]{example/sjtulogo.jpg}
-	  \bicaption[这里将出现在插图索引中]
+	  \bicaption
 		{秀丽隐杆线虫生命周期}
 		{The life cycle of C.elegans.}
 	  \label{fig:lifecycle}
@@ -117,7 +117,7 @@
 	\begin{figure}[h]
 	  \centering
 	  \includegraphics[width=12cm]{figure/chap1/wormculture.jpg}
-	  \bicaption[这里将出现在插图索引中]
+	  \bicaption
 		{线虫培养芯片}
 		{Microfluidic chips for worm culture}
 	  \label{fig:cd}
@@ -129,7 +129,7 @@
 	可以同时培养16条成虫，极大的加快了衰老相关的研究，并发现线虫的摆动频率会随着线虫发育日渐成熟而出现下降。
 	另一方面，研究者们将液滴和可逆凝胶运用在线虫的长期培养中\cite{Aubry2015Hydrogel,Krajniak2010Long,Wen2015A,Cornaglia2016Automated}。
 	Krajniak 和 Lu\cite{Krajniak2010Long}开发了一款集成微流控芯片如图\ref{fig:cd}(c)所示，该芯片由8个微腔室构成，通过周围的微管道和阀门控制。成功地
-	展示了在一块芯片上进行线虫地培养、固定与成像等操作。线虫由一个入口通道进入到8个线虫培养腔室，并将PF127
+	展示了在一块芯片上进行线虫的培养、固定与成像等操作。线虫由一个入口通道进入到8个线虫培养腔室，并将PF127
 	可逆凝胶经入口通道注入到线虫培养腔室。这种聚合物在低温(大约15$^\circ$C)下呈现较高的黏度，
 	在高温下(大约21$^\circ$C)呈现胶状。运用这款芯片，成功实现了从L1期线虫到成虫过程的生理监测。
 \subsubsection{线虫的固定}
@@ -152,7 +152,7 @@
 	\begin{figure}[t]
 	  \centering
 	  \includegraphics[width=12cm]{figure/chap1/immobilization.jpg}
-	  \bicaption[这里将出现在插图索引中]
+	  \bicaption
 		{线虫固定芯片}
 		{Microfluidic chips for worm immobilization}
 	  \label{fig:immobilization}
@@ -174,13 +174,13 @@
 	\begin{figure}[t]
 	  \centering
 	  \includegraphics[width=12cm]{figure/chap1/sorting.jpg}
-	  \bicaption[这里将出现在插图索引中]
+	  \bicaption
 		{线虫分选芯片}
 		{Microfluidic chips for worm sorting}
 	  \label{fig:sorting}
 	\end{figure}
 	线虫的筛选也是目前研究的热点。如对不同发育时期、不同大小的线虫进行筛选。
-	尤其是利用线虫做为神经或发育分子学研究的模式动物时，使用正向和反向基因筛查的方式
+	尤其是利用线虫作为神经或发育分子学研究的模式动物时，使用正向和反向基因筛查的方式
 	筛选新的基因是理解分子通路和蛋白功能的一种非常有效的方法。
 	线虫基因研究比较清楚，很容易通过基因敲除等方法对线虫进行特定
 	改造并进行相关研究。因此也需要对基因敲除的线虫进行分选。而在成百上千
@@ -206,7 +206,7 @@
 	\begin{figure}[b]
 	  \centering
 	  \includegraphics[width=12cm]{figure/chap1/screen.jpg}
-	  \bicaption[这里将出现在插图索引中]
+	  \bicaption
 		{药物筛选线虫芯片}
 		{worm chips for drug screening}
 	  \label{fig:screening}
@@ -262,9 +262,9 @@
 	特征向量作为四个本征向量，这四个本征向量将构成一个状态空间，任何线虫脊线曲率向量都可以投影到这个空间。
 	由此得到四个投影长度即可描述线虫的姿势。即可以在一个四维空间中描述线虫的姿势。Restif等人\cite{Restif2014CeleST}提出了一种新的
 	计算特征的方法。其首先计算同一个线虫在不同时刻的脊线曲率向量，并将其按照时间顺序排列，由此即可得到一个曲率矩阵。通过
-	对这个矩阵做二维离散傅里叶变换。最后基于傅里叶变换的结果计算线虫相关的特征。为了实现线虫行为数据的
+	对这个矩阵做二维离散傅里叶变换，最后基于傅里叶变换的结果计算线虫相关的特征。为了实现线虫行为数据的
 	共享，Javer等人\cite{Javer2018An}提出统一的数据格式支持对视频数据以及对应的特征数据的读取和存储。
-	并定义了一种中间数据格式表示Worm tracker Commons Object Notation (WCON)这样可以方便研究者组合使用不同
+	并定义了一种中间数据格式表示Worm tracker Commons Object Notation (WCON)，这样可以方便研究者组合使用不同
 	线虫跟踪模块和特征提取模块。
 \section{存在的问题}
 \label{sec:intro:analog}
@@ -287,7 +287,7 @@
 	  \item 本文首先制作了微流控芯片，并搭建了一个微流控芯片控制的硬件平台，
 	  可以实现线虫的简单培养并可以快速地形成多个
 	  浓度梯度，为线虫在给定化合物下的暴露创造一个精确的微环境。
-	  \item 针对微流控背景下线虫前景轮廓分割很容易收到噪声干扰以及鲁棒性等问题，而卷积网络在特征提取方面
+	  \item 针对微流控背景下线虫前景轮廓分割很容易受到噪声干扰以及鲁棒性不足等问题，而卷积网络在特征提取方面
 	  具有很强的鲁棒性并且基于卷积网络的架构在很多领域的分割任务中取得很大的成功。
 	  本文尝试将卷积网络和条件随机场运用在
 	  线虫前景轮廓分割的任务中，结果表明，与传统的图像分割方法相比，本文提出地分割算法能够显著的改善线虫前景分割的
@@ -305,17 +305,14 @@
 	\begin{enumerate}
 	  \item 第一章为绪论，介绍了本文研究的背景及意义并对秀丽隐杆线虫的生物学特性进行介绍。
 	  并介绍了国内外相关领域的研究进展以及目前所存在的问题。
-	  \item 第二章主要介绍了平台的硬件部分，具体包含微流控芯片的制作以及硬件平台的搭建，
-	  最后介绍了梯度稀释芯片的验证方法，对并实验结果进行分析。
+	  \item 第二章主要介绍了平台的硬件部分，本章首先介绍了双层梯度微流控芯片的设计和制作，
+	  并通过染料和荧光实验对芯片方案进行验证。
 	  \item 第三章主要介绍了平台的线虫图像处理部分，本章首先介绍了线虫图像处理的总体流程
-	  包括线虫的前景轮廓分割、线虫轮廓的解析、线虫轮廓
-	  的跟踪和线虫特征提取。\sout{本章首先介绍了线虫图像处理基于深度卷积网络的线虫前景轮廓分割算法，
-	  的总体方案，然后对传统的图像分割方法进行了分类介绍，紧接着介绍了深度卷积网络的理论基础。
-	  此外，本章还介绍了线虫轮廓分割数据集的采集与标注，并重点介绍了基于条件随机场模型的深度卷积网络架构设计。
-	  最后通过实验，与传统的图像分割方法分别做了定性和定量的比较分析}。
-	  \item \sout{第四章主要介绍了线虫轮廓解析算法的总体流程，紧接着介绍数据集的制作和网络结构的
-	  设计，最后介绍了网络模型的训练以及网络模型的测试，并分别从实时性、模型复杂度和
-	  准确率等指标上对两种模型进行了比较分析。}
+	  包括线虫的前景轮廓分割、线虫轮廓的解析、线虫轮廓的跟踪和线虫特征提取。并在本章的后续
+	  部分依次对线虫图像处理流程中的各个部分依次进行介绍。
+	  \item 第四章为本文的实验部分，首先介绍了线虫同步化的方法，利用本文提出的软硬件平台
+	  研究了线性浓度梯度双氧水对秀丽隐杆线虫摆动频率的影响，其中包括线性梯度芯片操作的介绍
+	  和实验结果分析。
 	  \item 第五章主要对本文的工作进行总结，并指出了下一步的研究内容。
 	\end{enumerate}
 \label{sec:intro:org}

@@ -1,38 +1,18 @@
 \chapter{微流控线虫芯片的设计及硬件平台的搭建}
 \section{引言}
-	
-	在传统的药物筛选过程中，往往是通过人工的方式在96孔板上配置不同浓度的化合物。
+	在传统的药物筛选过程中，通过人工的方式在96孔板上配置不同浓度的化合物。
 	然后将线虫暴露在不同浓度的化合物下，观察并记录线虫在不同浓度化合物下的变化。
 	这种人工稀释的方法不仅存在样品消耗大、通量低和操作繁琐等缺点，而且也不利于
-	观察。近年来，随着微流控技术的发展，一些研究者们提出了基于微流控技术的片上浓度稀释的方法。
-	片上浓度梯度稀释的方法不仅使反应体系减小十倍甚至百倍，
-	而且极大的减少了试剂的消耗，节约了实验成本。虽然已经有“圣诞树”结构的被动式梯度
-	形成芯片的报道，但存在样品消耗大以及需要精确的流阻设计和流速调节。
-	为了研究多种化合物的复合对线虫活性的影响，
-	本文设计了一种基于振荡的线性梯度稀释的微流控芯片。且只需要一个气源即可通过振荡的方式
-	完整样品的快速稀释，并通过染料实验和荧光实验验证本文提出的线性浓度梯度芯片的可行性。
-	
-\section{双层线虫梯度芯片的设计及制作}
-\subsection{线虫梯度芯片的设计}
-\label{arch-design}
-\begin{figure}[htbp]
-	  \centering
-	  \includegraphics[width=13cm]{figure/chap2/chip-arch.jpg}
-	  \bicaption[这里将出现在插图索引中]
-		{线性梯度稀释芯片结构}
-		{Structure of Linear gradient dilution chip}
-	  \label{fig:chap2:chip-arch}
-	\end{figure}
-线虫梯度芯片的设计如图\ref{fig:chap2:chip-arch}所示，由两层PDMS管道组成。上层为流道层，下层为阀门层。
-芯片包含八个阀门和四个进样口。阀门分别控制每列之间的隔绝和开启以及每列腔室之间的相互隔绝和开启。
-其中3、5、7号阀门控制4列每列之间的隔绝，而2、4、6号阀门分别控制1、2、3列里9排腔室之间的隔绝，8个阀门将整个芯片分为$9\times4$个独立的腔室。
-4列腔室中第一列腔室的长度依次线性递减，第二列腔室的长度依次线性增加，前两列腔室的长度总和为2mm (两腔室长度的比例从上到下依次为$9:1,8:2,\dots,1:9$)。
-第三列和第四列腔室的长度保持恒定分别为1mm和3mm。所有腔室的宽度和高度分别为200um和80um。
-
-\subsection{实验材料与仪器}
+	观察。本章设计了一种基于振荡的线性梯度稀释的微流控芯片。且只需要一个气源即可通过振荡的方式
+	完整样品的快速稀释，并通过染料实验和荧光实验验证本文提出的线性浓度梯度芯片的可行性。另外还
+	设计了一种单层侧向阀门的线虫培养芯片，侧向阀门的设计可以控制腔室中线虫的数量。并且还设计了专门
+	的食物通道为线虫提供食物，线虫卵可以从腔室的侧面流道排出，从而可以只对同一代线虫进行观察。
+	自动阀门的控制系统对于线虫的自动进样和阀门控制来说是相当重要的，阀门控制系统也在本章进行了介绍。
+	本章的内容为整个软硬件系统的硬件部分，为线虫的自动化图像分析搭建了一个硬件平台。
+\section{实验材料与仪器}
 	\begin{table}[htbp]
 	\centering
-	\bicaption[指向一个表格的表目录索引]
+	\bicaption
     {实验试剂与耗材}
     {Experimental reagents and consumables}
 	\begin{tabular}{p{150pt}p{230pt}}
@@ -46,9 +26,28 @@
 		DZF-6020型真空干燥箱& 上海新苗医疗器械制造有限公司\\
 		ZXZ-2型旋片式真空泵 & 浙江谭氏真空设备有限公司\\
 		SMZ-168型体式显微镜& 中国麦克奥迪公司 \\
+		NMC反应离子式深硅刻蚀系统 & 北京北方微电子公司\\
+		IX71型倒置荧光显微镜 & 日本Olympus公司\\
 	\bottomrule
 	\end{tabular}
-	\end{table}
+	\end{table}	
+\section{双层线虫梯度芯片的设计及制作}
+\subsection{线虫梯度芯片的设计}
+\label{arch-design}
+\begin{figure}[htbp]
+	  \centering
+	  \includegraphics[width=13cm]{figure/chap2/chip-arch.jpg}
+	  \bicaption
+		{线性梯度稀释芯片结构}
+		{Structure of Linear gradient dilution chip}
+	  \label{fig:chap2:chip-arch}
+	\end{figure}
+线虫梯度芯片的设计如图\ref{fig:chap2:chip-arch}所示，由两层PDMS管道组成。上层为流道层，下层为阀门层。
+芯片包含八个阀门和四个进样口。阀门分别控制每列之间的隔绝和开启以及每列腔室之间的相互隔绝和开启。
+其中3、5、7号阀门控制4列每列之间的隔绝，而2、4、6号阀门分别控制1、2、3列里9排腔室之间的隔绝，8个阀门将整个芯片分为$9\times4$个独立的腔室。
+4列腔室中第一列腔室的长度依次线性递减，第二列腔室的长度依次线性增加，前两列腔室的长度总和为2mm (两腔室长度的比例从上到下依次为$9:1,8:2,\dots,1:9$)。
+第三列和第四列腔室的长度保持恒定分别为1mm和3mm。所有腔室的宽度和高度分别为200um和80um。
+
 \subsection{芯片模具加工工艺}
 \subsubsection{阀门层模具制作}
 	
@@ -101,7 +100,7 @@
 	\begin{figure}[htbp]
 	  \centering
 	  \includegraphics[width=9cm]{figure/chap2/fabric-chip.jpg}
-	  \bicaption[这里将出现在插图索引中]
+	  \bicaption
 		{线性梯度稀释芯片实物图}
 		{fabricated linear gradient dilution chip}
 	  \label{fig:chap2:chip-fabric}
@@ -171,21 +170,28 @@
 	\begin{figure}[htbp]
 	  \centering
 	  \includegraphics[width=9cm]{figure/chap2/fluence.jpg}
-	  \bicaption[这里将出现在插图索引中]
+	  \bicaption
 		{荧光实验结果}
 		{Fluorescence experiment results}
 	  \label{fig:chap2:fluence}
 	\end{figure}
 \section{单层侧向阀门线虫培养芯片的设计及制作}
 \subsection{单层阀门线虫培养芯片的设计}
+    如图\ref{fig:chap2:singlelayer}所示是单层侧向阀门线虫培养芯片的设计图。图中可以看出芯片可以分成三个部分，本文
+	分别用三种不同的颜色表示。最里面的表示线虫的培养腔室。由于腔室的面积比较大且PDMS是柔性材料，
+	为了防止腔室塌陷，腔室里放置了很多微柱，两边分别表示线虫的进样口和出样口。中间是本文设计的侧向
+	阀门，通过对阀门施加气压可以控制线虫培养腔室两端通道宽度的大小。这种侧向阀门的设计可以控制腔室中
+	线虫的进入和排出，相当于一个夹子的作用，从而可以控制腔室中线虫的数量。最外层的设计为线虫提供食物和虫卵的排出。右边为食物的
+	入口，其中的网状结构可以过滤掉食物中的小碎片。虫卵会通过线虫腔室的侧向通道被排出，从而可以防止不同代的
+	线虫出现在同一个腔室，可以针对同一代的线虫进行实验观察。
 \label{subsec:chipdesign}
 	\begin{figure}[htbp]
 	  \centering
-	  \includegraphics[width=9cm]{figure/chap2/arch-chip.png}
-	  \bicaption[这里将出现在插图索引中]
+	  \includegraphics[width=14cm]{figure/chap2/arch-chip.png}
+	  \bicaption
 		{单层阀门线虫培养芯片}
 		{Single layer lateral valve chip for  worm culture}
-	  \label{fig:chap2:fluence}
+	  \label{fig:chap2:singlelayer}
 	\end{figure}
 \subsection{单层阀门芯片模具的制作}
 	下面开始介绍单层阀门芯片模具的制作工艺流程。
@@ -223,7 +229,28 @@
 片和玻璃贴合在一起并放入$80^\circ C$的烘箱中恒温2小时，加强键合效果。
 	\end{enumerate}
 \subsection{单层侧向阀门线虫固定芯片的测试}
-
+	为了测试侧向阀门的设计可以控制腔室两端管道的宽度，本文对测试了不同压力下管道宽度的变化。为了便于视觉
+	观察，我们向阀门通道注入了红色的染料。图\ref{fig:chap1:width}表示向阀门施加不同压力的情况下腔室两端通道的
+	宽度变化。从图中可以看出在0.3Mpa的压力下，通道的宽度明显变窄了。说明这种侧向阀门的设计可以改变通道的宽度。
+	\begin{figure}[!htp]
+	  \centering
+	  \begin{subfigure}{0.45\textwidth}
+		\centering
+		\includegraphics[width=1\linewidth]{figure/chap1/singlelayertest1.jpg}
+		\caption{没有对阀门施加压力的情况下通道宽度}
+		\label{fig:before}   
+	  \end{subfigure}
+		\hspace{1em}
+	  \begin{subfigure}{0.45\textwidth}
+		\centering
+		\includegraphics[width=1\linewidth]{figure/chap1/singlelayertest2.jpg}
+		\caption{向阀门施加0.3Mpa压力下的通道宽度}
+		\label{fig:after}
+	  \end{subfigure}
+	  \bicaption{不同压力下通道宽度的变换}{Transform of channel width under different pressure}
+	  \label{fig:chap1:width}
+	\end{figure}
+	
 \section{阀门控制系统搭建}
 	目前，双层的微流控芯片一般由下层的阀门层和上层的流道层组成。阀门层的PDMS薄膜通常很薄，当向气阀通道施加一定的
 	气压(大约30psig)，阀门层的薄膜会向上顶起。由于上层的流道和下层的气阀通道是上下交叉的，通过控制向气阀通道施加
@@ -259,23 +286,30 @@
 	 图像输出控制。该相机较好满足了本文对线虫视频采集模块的要求。为了提高视频采集的帧率，本文基于该相机的SDK，开发基于多线程
 	 的视频采集程序。
 	 
-	对DigiRetina 16相机设备的操作通常分为7个步骤，其操作流程如图\ref{fig:flow_chart1}所示。
-	第一步为设备初始化，设备初始化使用TUCAM_Api_Init函数进行初始操作，该函数初始化帧采集和控制相机。
-	第二步为相机初始化，相机初始化使用TUCAM_Dev_Open函数。该函数获取必要的相机句柄来做为其他函数的
-输入参数。在调用TUCAM_Dev_Open函数打开相机之后，可以通过相机句柄获取相机的产品信息。
+	对DigiRetina 16相机设备的操作通常分为以下几个步骤，其操作流程如图\ref{fig:flow_chart1}所示。
+	第一步为设备初始化，设备初始化使用TUCAM\_Api\_Init函数进行初始操作，该函数初始化帧采集和控制相机。
+	第二步为相机初始化，相机初始化使用TUCAM\_Dev\_Open函数。该函数获取必要的相机句柄来做为其他函数的
+	输入参数。在调用TUCAM\_Dev\_Open函数打开相机之后，可以通过相机句柄获取相机的产品信息和设置相机参数。
 	在图像采集之前，需要在内存中开辟内存空间用于保存采集的图像数据，所需内存的大小与图像的分辨率有关。
-	DigiRetina 16相机支持多种分辨率的图像采集，分辨率可以在打开设备后进行设置。在结束采集后，需要关闭设备并
-	释放内存空间。
+	内存的分配TUCAM\_Buf\_Alloc 必须在TUCAM\_Cap\_Start数据开始捕
+	获之前调用；而内存的释放TUCAM\_Buf\_Release 必须在TUCAM\_Cap\_Stop 停止数据捕获之后
+	调用。在分配内存后，即可调用TUCAM\_Buf\_WaitForFrame函数，该函数用于等待数据捕获完成，这个函数属于阻塞函数。
+	TUCAM\_Buf\_CopyFrame函数用于将捕获的图像数据传输到电脑内存中，该函数必须在
+	TUCAM\_Buf\_WaitForFrame 返回之后调用，否则无法获取正确的图像数据。相机的SDK以动态链接库的形式提供，而本文采用
+	python作为开发语言进行高速视频采集程序的设计，因此不能直接调用SDK。ctypes是python的第三方库，它提供了与C语言
+	兼容的数据类型。通过这个第三方库，使python具有调用动态链接库(DLL)的能力。使用opencv提供的VideoWriter模块
+	进行视频的写入。并使用C函数库中的memcpy内存拷贝函数将内存中的图像数据拷贝到numpy数组指针指向的内存。然后再用
+	VideoWrite将numpy数组写入硬盘，至此便完成一帧图像的写入。
 	\begin{figure}[!htp]
     \centering
     \begin{tikzpicture}[node distance=2.5cm,auto]
 	\tikzstyle{process} = [rectangle,rounded corners,thick,minimum width = 3cm,text width=3cm,inner sep=2pt,minimum height =1.5cm, text centered, draw = black]
-    \node (init) [process] {设备初始化};
-    \node (allocate) [process, right of=init,node distance=4cm] {分配内存空间};
-    \node (open) [process, right of=allocate,node distance=4cm] {打开设备};
-    \node (op) [process, below of=open,yshift=0.5cm] {图像采集};
-    \node (close) [process, below of=op,yshift=0.5cm] {关闭设备};
-	\node (free) [process, left of=close,node distance=4cm] {释放内存空间};
+    \node (init) [process] {驱动初始化};
+    \node (allocate) [process, right of=init,node distance=4cm] {相机初始化并分配内存空间};
+    \node (open) [process, right of=allocate,node distance=4cm] {设置相机参数};
+    \node (op) [process, below of=open,yshift=0.5cm] {开始捕获数据};
+    \node (close) [process, below of=op,yshift=0.5cm] {确保拍摄已经完成，并获得数据};
+	\node (free) [process, left of=close,node distance=4cm] {释放内存空间并关闭相机};
 	\node (exit) [process, left of=free,node distance=4cm] {释放驱动};
     %连接具体形状
     \draw [arrow](init) -- (allocate);
@@ -307,10 +341,6 @@
     \draw [arrow1](node1) -- (node2);
     \draw [arrow1](node2) -- (node3);
     \draw [arrow1](node3) -- (node4);
-    % \draw [arrow2](node1) -- (label1);
-	% \draw [arrow2](node2) -- (label2);
-	% \draw [arrow2](node3) -- (label3);
-	% \draw [arrow2](node4) -- (label4);
 	\end{tikzpicture}
     \bicaption{从图像采集到图像处理过程的时间开销分析}
 	{Time consumption analysis from image acquisition to image processing}
@@ -320,10 +350,10 @@
 	一帧图像从采集到被处理共分为4步骤，如图\ref{fig:image_process_flow}所示，各部分的时间开销
 	分别用$T_1,T_2,T_3,T_4$表示，下面分别对各部分时间开销进行详细分析：
 	\begin{description}
-    \item[时间开销T1:] 曝光时间和图像分辨率影响这部分的时间开销，增加曝光时间或提高图像采集的分辨率
+    \item[时间开销T1:] 由TUCAM\_Buf\_WaitForFrame函数的时间开销决定，曝光时间和图像分辨率影响这部分的时间开销，增加曝光时间或提高图像采集的分辨率
 	都会使这部分的时间开销变大。
-    \item[时间开销T2:] 相机驱动程序负责将相机缓存中的图像数据传送到电脑上的一块内存区域。
-	这个内存块在相机初始化时开辟，释放相机设备时自动释放，图像采集的分辨率、USB线的长度会影响时间开销。
+    \item[时间开销T2:] 由TUCAM\_Buf\_CopyFrame函数的时间开销决定，相机驱动程序负责将相机缓存中的图像数据传送到电脑上的一块内存区域。
+	这个内存块在相机初始化后开辟，图像采集的分辨率、USB线的长度会影响时间开销。
     \item[时间开销T3:] 图像处理程序从上一步的内存区域读取图像数据。
 					图像分辨率、内存拷贝数据的速度等会影响这部分的时间开销。
 	\item[时间开销T4:] 处理一帧图像的时间对不同的图像处理程序而言是不同，这部分的时间开销与具体的图像处理算法
@@ -332,7 +362,7 @@
 	从一帧图像的采集到处理也可以分成图像采集阶段(对应图\ref{fig:image_process_flow}前两个部分)和图像处理阶段
 	(对应图\ref{fig:image_process_flow}后两个部分)。如图\ref{fig:comparison} (b)所示，
 	为了加速视频采集的帧率，本文采用了两个独立的线程分别负责
-	图像的采集和将图像写入硬盘，这样可以将这两个任务并行，一帧图像从采集到写入硬盘平均所消耗的时间取决于
+	图像的采集和将图像写入硬盘(使用python中的concurrent.futures线程库)，这样可以将这两个任务并行，一帧图像从采集到写入硬盘平均所消耗的时间取决于
 	图像采集和硬盘写入两者所消耗时间的最小值，公式\ref{eq:paparell}表示多线程模式下视频采集帧率。而在单线程模式下，这两个任务是顺序执行的，一帧图像从采集到写入
 	硬盘平均所消耗的时间取决于图像采集和硬盘写入两者消耗时间之和，公式\ref{eq:squential}表示单线程模式下视频采集
 	帧率。多线程视频采集相较于单线程视频采集的加速比由公式\ref{eq:ratio}表示。
@@ -391,7 +421,7 @@
 	同一分辨率下，多线程视频采集相较于单线程视频采集其帧率均有大幅提高。且随着采集分辨率的提高，加速效果越明显。
 	\begin{table}[thbp]
 	\centering
-	\bicaption[指向一个表格的表目录索引]
+	\bicaption
     {不同分辨率对视频采集帧率的影响}
     {The effect of different resolutions on the video capture frame rate}
 	\label{tab:resolutions}
@@ -410,6 +440,9 @@
 	\end{tabular}
 	\end{table}
 \section{本章小结}
-	本章的主要工作是为本文提出的药物筛选平台搭建了一个硬件平台。首先，介绍了基于振荡原理的线性梯度稀释芯片的结构设计。
-	本章还介绍了微流控芯片的制作工艺。然后介绍了振荡混合的理论机制，并在最后通过染料实验和荧光实验证明了线性
-	梯度稀释芯片设计的合理性，实验结果显示基于振荡的混合方式能够有效的缩短不同液体的混合时间。
+	本章的主要工作为物筛选平台的硬件部分。
+	首先，介绍了基于振荡原理的线性梯度稀释芯片的结构设计、双层微流控芯片的制作工艺。然后介绍了振荡混合的理论机制，
+	并在最后通过染料实验和荧光实验证明了线性梯度稀释芯片设计的合理性，实验结果显示基于振荡的混合方式能够有效的缩短
+	不同液体的混合时间。为了便于对同一代的线虫进行长期观察，本章还设计了另一种单层侧向阀门的线虫培养
+	芯片，并介绍了单层微流控芯片的制作工艺，芯片的侧向阀门可以控制腔室中线虫的数量，并且可以将线虫卵从腔室中排出，通过对阀门施加不同的压力
+	发现这种侧向阀门可以很好的控制通道的宽度。最后对阀门控制系统和高速视频采集部分进行了介绍。
