@@ -1,0 +1,12 @@
+\begin{tikzpicture}[node distance=2cm]
+    \node (pc) [process] {电脑};
+    \node (mcu) [process, below of=pc] {微控制器};
+    \node (valves) [process, below of=mcu] {电磁阀};
+    \node (pump) [process, right of=valves,node distance=4cm] {气泵};
+    \node (chip) [process, left of=valves,node distance=4cm] {微流控芯片};
+    %连接具体形状
+    \draw [arrow](pc) -- (mcu);
+    \draw [arrow](mcu) -- (valves);
+    \draw [arrow](valves) -- (chip);
+    \draw [arrow](pump) -- (valves);
+\end{tikzpicture}

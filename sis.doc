@@ -1,0 +1,657 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<p>Currently, the number of chemicals in the environment is increasing and posing a serious threat to people’s health. How to conduct risk assessment of those chemicals scientifically is a hotspot and a difficult point in the public health field. Although traditional animal experiments are reliable and have great significance, they have long cycle times, high costs, and limitations related to animal protection, making it difficult to conduct high-throughput and large-scale toxicity studies. Cells or organs can be used in high throughput toxicity evaluation and screening, but the results of the study cannot replace experiment in vivo. The representative model of Caenorhabditis elegans(C.elegans) has the characteristics of small size, short life cycle, simple structure and high gene conservation. It is an important in-vivo research tool in the field of environmental exposure and toxicology research. The microfluidic system is matched with the size of the C.elegans. Compared with the C.elegans experiment on the agar plate, it has the advantages of small reaction system, high throughput, automation and flexible operation. Therefore, the microfluidic chip-based C.elegans research platform provides a new means for high-throughput, large-scale environmental chemical assessment. However, there is still no integrated microfluidic analysis platform that integrates automated opration and image analysis.</p>
+<p>In response to the above problems, this paper first builds a hardware platform based on microfluidic chip, which can realize the simple cultivation of C.elegans and create a precise microenvironment for the exposure of C.elegans to a given environmental toxin. In the automated image analysis of toxicology experiments with C.elegans, body length and swing frequency are often used as important physiological indicators for evaluating toxicity. However, image analysis has the following difficulties:</p>
+
+<p>Since the C.elegans is transparent and the microfluidic chip made by PDMS is also transparent, the foreground contour segmentation of the C.elegans is a difficult point in the whole system.</p>
+<p>When multiple C.elegans are present in one chamber, multiple contours of C.elegans may be entangled, resulting in loss of tracking due to the inability to recognize the contours of individual C.elegans.</p>
+<p>Because C.elegans are non-rigid and their morphological changes are diverse, it is also a difficult point to track the C.elegans in multi-frame images.</p>
+<p>To alleviate the problems mentioned above, this paper proposes the following solutions:</p>
+
+<p>Aiming at the shortcomings of the traditional image segmentation algorithm in the foreground segmentation task of the worm (such as: poor robustness, dependence on hyperparameter selection and unsatisfactory segmentation), this paper proposes a segmentation algorithm based on deep convolutional networks and conditional random fields. Compared with other segmentation algorithms, the proposed algorithm can significantly improve the performance of foreground segmentation of C.elegans. On the segmentation dataset of the C.elegans we have labeled, the segmentation algorithm proposed in this paper achieves a segmentation accuracy of 0.11% on the pixel error index.</p>
+<p>In order to solve the entanglement between the contours of multi-worms, this paper proposes a encode-decode architecture based on convolutional neural network, which effectively solves the problem of parsing the contour of a single C.elegans.</p>
+<p>In order to achieve multi-worms tracking, this paper proposes a simple and effective tracking strategy to track the C.elegans by nearest neighbor search. The experiment found that the tracking method can achieve robust tracking of the C.elegans under the condition that the foreground segmentation of the C.elegans is complete.</p>
+<p>Using the traced contour of C.elegans, physiological characteristics such as body length and swing frequency of the C.elegans can be calculated. Finally, by studying the effect of linear concentration gradient hydrogen peroxide on C.elegans activity and the results are consistent with the traditional experiment results. The application prospects of microfluidic platform and automated image analysis system in toxicology research are presented.</p>
+
+
+
+
+
+
+
+
+<h1 id="chap:intro">绪论</h1>
+<h2 id="sec:intro:analog">论文研究的背景及意义</h2>
+<p>20 世纪以来，人类生存环境中化学品日益增多，针对 化学物进行健康风险的评估是公共健康领域当前重要的研究课题。目前人类与 环境化合物的接触方式多表现为低剂量下的复合暴露，数量巨大且种类复杂， 如何实现高通量的毒性评价和科学的风险评估成为毒理研究的热点与难点。</p>
+<p>自 2005 年起，美国启动了 21 世纪毒理学研究计划<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>（TOX21），主要借助体 外测试和计算生物信息学等方法进行高通量化学品毒性评估。然而，使用细胞或 类器官的体外方法虽然可以进行较高通量的毒性测试，但无法代替动物体内实 验，因为其结果无法反映化合物进入生物体内吸收、分布、代谢与排泄环节对毒 性的影响。传统的动物体内毒性研究结果具有很大的参考意义，但是实验周期长、 成本高，并且涉及动物保护与伦理。如果进行待测化合物低剂量复合暴露毒性研 究，需要不同化合物的多剂量进行配伍，基于上述动物实验的局限性，难以进行 高通量的毒性测试。秀丽隐杆线虫作为一种模式生物，对环境变化非常敏感；其 生命周期和寿命较短，身体尺寸较小易操作，以大肠杆菌为食易培养，身体透明 易观察，染色体和基因组较小易分析，生物学信号通路保守，因此近年来线虫被 广泛应用于重金属、PM2.5、农药、纳米颗粒和有机污染物等环境毒理学研究领 域<span class="citation" data-cites="Soares2017Neurodegeneration Wu2017Coal Ana2010Genome Lucio2017Optimization Wang2017Mitochondria"></span>。 国际上目前已进展到第三阶段的 TOX21 计划也在使用包括线虫在内的模式生 物对前期结果进行验证，并计划对更多环境化合物进行毒性筛选。</p>
+<p>传统的线虫培养方法在液体或琼脂板上进行，需要的线虫数量多，待测化合 物所需量较大，此外难以对单个线虫实现精确刺激、操控和追踪。微流控体系与 线虫大小尺度相匹配，有望实现线虫芯片内培养、成像和数据分析等。自从 2011 年美国启动“类器官芯片”计划之后，以微流控芯片为平台的毒理测试技术发展 迅速，相比器官芯片平台，线虫芯片是在动物个体水平上进行毒理学研究，具有 不可替代的优势。</p>
+<h2 id="秀丽隐杆线虫概述">秀丽隐杆线虫概述</h2>
+
+<p><img src="figure/chap1/Celegans.jpg" alt="image" style="width:14cm" /> <span id="fig:Celegans" label="fig:Celegans">[fig:Celegans]</span></p>
+<p>秀丽隐杆线虫(简称 C. elegans)是一种微米尺度的无脊椎模式生物，主要生活在土壤中或水中，以大肠杆菌OP50为食，成虫 体长约为1mm宽度50um，并且从幼虫长到成虫只需要3天。秀丽隐杆线虫是线虫动物门中的一种，包含雌雄同体和雄性两种性别如图<a href="#fig:Celegans" data-reference-type="ref" data-reference="fig:Celegans">[fig:Celegans]</a>。两种性别都是二倍体，都有五对常染色体， 但雌雄同体的线虫有两个X常染色体(XX)而雄性线虫只有一个X常染色体(XO)。在自然条件下，线虫几乎都为雌雄同体， 雄性个体只占约五百分之一。线虫的生命周期较为简单如图<a href="#fig:lifecycle" data-reference-type="ref" data-reference="fig:lifecycle">[fig:lifecycle]</a>所示,成年雌雄同体线虫同时含有精子和卵母细胞，因此能够自体受精。 每一个自体受精的雌雄同体线虫大约可以产生330多个蛋。如果和雄性体线虫交配产蛋量将会提高，并且有利于 基因的重新组合。在<span class="math inline">25<sup>∘</sup><em>C</em></span>下孵化12个小时即可得到L1期的线虫幼虫， 长度约为0.15mm。</p>
+<p>L1期幼虫基本上具备了和成虫一样的器官结构，除了还没有形成生殖器结构，从L1期线虫 长到L4期只需要3天。 线虫作为一种现代动物模型被广泛地用于细胞生物学、神经科学、衰老与发育和毒理学等研究中。在2002年 ，研究秀丽线虫的研究团体就已经扩展到300多个实验室，分布在20多个国家和地区。1998年，构成整个基因组的9700万个碱基对DNA的测序基本完成， 这是第一个经过完整基因组测序的多细胞生物。与其他模式生物相比秀丽隐杆线虫具有如下技术优势：</p>
+<ol>
+<li><p>由于线虫通体透明，可以通过荧光蛋白标记的表达观察细胞的分裂等许多重要的生理过程， 还可以用于对神经元成像，研究外部刺激与神经元活动之间的关联。</p></li>
+<li><p>线虫的生命周期短、培养简单以及繁殖能力强，这些特性都有助于加快实验周期，提高实验的并行性。</p></li>
+<li><p>线虫身体构造简单，遗传模式保守，有利于减小实验中由于个体差异而引起实验结果的扰动。</p></li>
+<li><p>对线虫基因的测序已经完成，使得线虫可以在基因筛查分析和其他遗传学实验中发挥重要作用。</p></li>
+<li><p>线虫基因与人类的基因有约40%的同源性，许多的研究者将线虫作为重要疾病模型研究疾病机制。</p></li>
+</ol>
+
+<p><img src="figure/chap1/lifecycle.jpg" alt="image" style="width:8cm" /> <span id="fig:lifecycle" label="fig:lifecycle">[fig:lifecycle]</span></p>
+<h2 id="sec:intro:analog">国内外研究现状</h2>
+<p>微流控是一种在微米尺度操纵流体的技术，具有反应体系小、通量高、自动化且操作灵活等优势， 被越来越多的应用于细胞和微米尺度生物的研究中。 微流控技术在线虫研究中的应用为研究者们提供了一个全新的研究平台， 极大的促进了相关领域的研究进展。目前国外课题组主要是乔治亚理工大学的Lu hang教授 课题组和洛桑联邦理工学院 Gijs Martinus教授的微系统实验室， 国内主要是中科院大连物化所的秦建华课题组和 华中科技大学的刘笔锋教授课题组。利用微流控技术研究线虫具有的 优势有：</p>
+<p>利用微流控芯片可以实现在细胞尺度上对线虫的操纵。</p>
+<p>利用微流控芯片可以实现对线虫的快速固定与成像，与使用药物麻醉的方法相比，这种固定 方式不会对线虫产生任何损害，线虫可以在后续步骤中恢复。</p>
+<p>利用微流芯片可以快速的从上千只线虫中的筛选出需要的表型，实现线虫的快速分选。</p>
+<p>微流控芯片可以为线虫的培养提供精确的微环境，为线虫的感知实验提供精确的刺激传达。</p>
+<p>本文将从以下几个方面对近年来国内外相关领域的发展状况进行回顾，包括微流控线虫操纵方法、线虫药物筛选以及介绍 机器视觉方法在线虫研究中的应用。</p>
+<h3 id="微流控芯片线虫操控方法">微流控芯片线虫操控方法</h3>
+<p>在线虫相关的实验中，经常涉及一些对线虫的日常操纵。如线虫的片上培养、线虫分选、线虫的固定与成像等。 为了避免复杂的人工操作，研究者们提出了许多不同用途的芯片，这些芯片能够将不同的操作集成在一起，极大的 提高了实验的并行性和自动化程度。</p>
+<h4 id="sec:intro:analog">线虫的培养</h4>
+<p>线虫的长期培养是研究线虫的衰老和发育的基础，在许多需要对线虫进行长期观察的实验中也需要解决线虫的长期培养问题。 线虫的长期培养需要与外部环境进行物质交换，包括氧气和食物的供应以及将代谢废物排出。微流控芯片的制作材料一般为聚二甲基硅氧烷 (ploydimethylsiloxane, PDMS)，这种材料具有很好的透气性，因此微流控芯片可以为线虫提供氧气。其中一个早期的工作是由Kim等人<span class="citation" data-cites="Kim2007Automated"></span> 完成的，如图<a href="#fig:cd" data-reference-type="ref" data-reference="fig:cd">[fig:cd]</a>(a)所示，他们设计了一款类似于CD形状的微流控芯片可以实现线虫的片上培养长达数天。食物会在离心力的作用下进入到线虫的培养腔室。 线虫腔室中的废物会在离心力的作用下被甩出，从而实现了物质的交换。这款芯片可以将线虫培养到三代并且不会影响到线虫的 生长和行为。然而，由于其芯片结构设计较为简单，所以无法区分不同代之间的线虫且难以实现对单个线虫的跟踪和 成像。</p>
+
+<p><img src="figure/chap1/wormculture.jpg" alt="image" style="width:12cm" /> <span id="fig:cd" label="fig:cd">[fig:cd]</span></p>
+<p>针对以上的局限，Hulme等人<span class="citation" data-cites="Hulme2010Lifespan"></span>设计了一款新的线虫培养芯片如图<a href="#fig:cd" data-reference-type="ref" data-reference="fig:cd">[fig:cd]</a>(b)所示。 由一排平行的腔室组成，可以实现线虫 的长期培养及研究其运动行为。利用侧边的楔形通道来固定线虫可以实现线虫的固定与成像以及监测其体长的变化。 可以同时培养16条成虫，极大的加快了衰老相关的研究，并发现线虫的摆动频率会随着线虫发育日渐成熟而出现下降。 另一方面，研究者们将液滴和可逆凝胶运用在线虫的长期培养中<span class="citation" data-cites="Aubry2015Hydrogel Krajniak2010Long Wen2015A Cornaglia2016Automated"></span>。 Krajniak 和 Lu<span class="citation" data-cites="Krajniak2010Long"></span>开发了一款集成微流控芯片如图<a href="#fig:cd" data-reference-type="ref" data-reference="fig:cd">[fig:cd]</a>(c)所示，该芯片由8个微腔室构成，通过周围的微管道和阀门控制。成功地 展示了在一块芯片上进行线虫的培养、固定与成像等操作。线虫由一个入口通道进入到8个线虫培养腔室，并将PF127 可逆凝胶经入口通道注入到线虫培养腔室。这种聚合物在低温(大约15<span class="math inline"><em></em><sup>∘</sup></span>C)下呈现较高的黏度， 在高温下(大约21<span class="math inline"><em></em><sup>∘</sup></span>C)呈现胶状。运用这款芯片，成功实现了从L1期线虫到成虫过程的生理监测。</p>
+<h4 id="sec:intro:analog">线虫的固定</h4>
+<p>线虫的固定对于线虫神经元成像和线虫神经元再生<span class="citation" data-cites="Gokce2014A"></span>等需要固定线虫的实验是至关重要的。传统的线虫固定方法经常使用胶水或者麻醉剂 来固定线虫，使用胶水固定线虫往往很难在短时间内恢复，而使用麻醉剂对线虫神经元可能产生潜在的影响。因此，为了 实现可逆的无损伤的固定线虫，研究者提出很多基于微流控芯片固定线虫的方法。如物理化学法、结构限定法、双层阀门法 、单层阀门法以及凝胶固定法。</p>
+<p>Chokshi等人<span class="citation" data-cites="Chokshi2009CO2"></span>开发了一款简单的 微流控芯片可以有效的固定线虫，其芯片结构如图<a href="#fig:immobilization" data-reference-type="ref" data-reference="fig:immobilization">[fig:immobilization]</a> (a)，并运用这款芯片研究了线虫的运动行为。作者比较了两种不同的固定方法，第一种方法是在上层 PDMS通道中通入二氧化碳，利用PDMS材料的透气性，上层二氧化碳会向下层扩散从而达到固定线虫的目的；第二种方法是在上层通道 中施加一个大的气压，使中间的PDMS模形变，从而可以将线虫固定。作者还通过评估线虫的运动速度来量化两种不同的固定方式 对线虫产生的潜在影响，他们发现通过二氧化碳方法固定线虫比用机械的方法固定对线虫的影响较小。 Saberi等人<span class="citation" data-cites="saberi2018microfluidic"></span>为了研究由衰老导致的线虫神经元突触形态的改变，提出了一种具有线虫同步 化功能和高通量成像的微流控芯片，其芯片结构如图<a href="#fig:immobilization" data-reference-type="ref" data-reference="fig:immobilization">[fig:immobilization]</a> (b)所示。由线虫同步化部分和线虫成像通道构成。 其成像通道上有很多锥型的小通道用于捕获线虫。为了进一步固定线虫，作者在芯片上放置了干冰颗粒，通过降低温度的方式将 线虫固定。同时，为了防止二氧化碳的渗透，在芯片上表面放置了一块玻璃片。通过这款芯片，作者实现了同时对72条线虫 的固定与成像。</p>
+
+<p><img src="figure/chap1/immobilization.jpg" alt="image" style="width:12cm" /> <span id="fig:immobilization" label="fig:immobilization">[fig:immobilization]</span></p>
+<p>以上的方法虽然能够对成虫进行固定，但由于幼虫的尺寸比成虫小且L1期的幼虫很容易 将微通道阻塞，因此幼虫的固定是个难点。Aubry等人<span class="citation" data-cites="Aubry2015Hydrogel"></span>运用FP127凝胶液滴将L1的幼虫包裹， 其芯片结构如图<a href="#fig:immobilization" data-reference-type="ref" data-reference="fig:immobilization">[fig:immobilization]</a> (c)所示。当液滴进入到存储单元 时可以调整温度从而固定线虫，成功实现对L1期幼虫的操纵及成像。为了研究线虫胚胎发育及其分子机制，Cornaglia 等人<span class="citation" data-cites="Cornaglia2015An"></span>设计了一款可以固定线虫胚胎并对其成像的微流控芯片，其芯片结构如图<a href="#fig:immobilization" data-reference-type="ref" data-reference="fig:immobilization">[fig:immobilization]</a> (d)所示。其由一个线虫培养腔室和许多个微小的胚胎腔室阵列组成， 研究者可以在胚胎腔室中固定线虫胚胎并且实时观察胚胎发育的整个过程，这种阵列式的腔室结构支持同时对多个线虫 胚胎进行观察，具有高通量的优势。还有一些研究者利用狭窄的微通道来固定线虫<span class="citation" data-cites="Lee2014A Hulme2007A"></span>，通过对线虫的存活率和子代数目 进行统计发现这种固定方式对线虫没有产生明显影响。最近，Berger等人<span class="citation" data-cites="berger2018long"></span>设计了一款单层的微流控 芯片通过对阀门施加不同的压力可以控制腔室两端通道的宽度，腔室的尺寸和线虫的大小相匹配。作者运用这款芯片 实现了线虫的长期固定，并且通过与自由腔室中的线虫比较，发现这种固定方式不会对线虫产生任何影响，满足线虫的 所有生理需求。</p>
+<h4 id="sec:intro:analog">线虫的分选</h4>
+
+<p><img src="figure/chap1/sorting.jpg" alt="image" style="width:12cm" /> <span id="fig:sorting" label="fig:sorting">[fig:sorting]</span></p>
+<p>线虫的筛选也是目前研究的热点。如对不同发育时期、不同大小的线虫进行筛选。 尤其是利用线虫作为神经或发育分子学研究的模式动物时，使用正向和反向基因筛查的方式 筛选新的基因是理解分子通路和蛋白功能的一种非常有效的方法。 线虫基因研究比较清楚，很容易通过基因敲除等方法对线虫进行特定 改造并进行相关研究。因此也需要对基因敲除的线虫进行分选。而在成百上千 的线虫中筛选出特定表型的线虫是一件耗时且工作量很大的事情，运用微流控器件可以极大的缩短筛查的时间并可以很快 对观察到的基因变种进行分选。线虫分选芯片的操作往往是基于线虫某种表型的特性如趋电性、行为表型、尺寸、 运动能力、基因表达水平以及电生理学等特性的差异。国内刘笔锋教授课题组在2015年利用线虫的趋电性设计了一种单层微流控芯片<span class="citation" data-cites="C5LC00354G"></span>， 可以有效的分选出不同发育阶段的线虫以及具有神经缺陷的变种，其芯片结构如图<a href="#fig:sorting" data-reference-type="ref" data-reference="fig:sorting">[fig:sorting]</a> (a)所示。 芯片的左边是线虫加载腔室，右边为许多对称的分选通道。这些分选通道宽度为300um高度为120um，通道之间 的夹角为<span class="math inline">5<sup>∘</sup></span>。不同发育阶段的线虫在电场的作用下会向不同的分选通道运动。Yan等人<span class="citation" data-cites="yan2014continuous"></span> 开发了一种流式的线虫分选系统，并集成了光纤检测模块，其系统和芯片的结构如图<a href="#fig:sorting" data-reference-type="ref" data-reference="fig:sorting">[fig:sorting]</a> (b)所示。 片上集成的两对光纤检测模块分别用于检测线虫是否出现和是否为荧光蛋白标记的线虫。由于整个过程不需要固定线虫， 极大地提高了分选的速度。为了从混合发育的线虫中分选出线虫卵，最近，Sofela等人<span class="citation" data-cites="sofela2018high"></span>设计了一款 螺旋线状的芯片，其芯片结构如图<a href="#fig:sorting" data-reference-type="ref" data-reference="fig:sorting">[fig:sorting]</a> (c)所示。其通道总长度为1000um。其通道横截面高度由里到外从220um 减小到到160um。这种梯形横截面的设计会使流体在通道内侧形成涡流，将<span class="math inline">5 ∼ 25</span>um尺寸的微粒吸引到 管道内侧，在螺旋管道的出口便可以根据微粒的尺寸将其分离。 Casadevall<span class="citation" data-cites="Casadevall2011High"></span>等人设计了一款芯片可以对不同尺寸的线虫同步化，并且可以实现 每分钟200-1200条线虫的分选速率。Dong<span class="citation" data-cites="dong2016versatile"></span>等人设计了一种双层的基于PDMS膜形变的线虫分选芯片。通过控制上层气压使 下层流道层的尺寸发生改变从而只允许特定尺寸的线虫通过这些通道进入另一个腔室。这种方法需要对特定尺寸的线虫 精确控制施加气压的大小，这款芯片可以以每秒3.5个线虫的速率进行分选。</p>
+<h3 id="sec:intro:analog">药物筛选与毒理实验</h3>
+
+<p><img src="figure/chap1/screen.jpg" alt="image" style="width:12cm" /> <span id="fig:screening" label="fig:screening">[fig:screening]</span></p>
+<p>线虫作为一种重要的模式生物与人类的疾病基因具有约65%的相似性<span class="citation" data-cites="Baumeister2002The Sonnhammer1997Analysis"></span>， 因此线虫在药物筛选和毒理学研究领域经常作为一种重要的研究对象。近年来，研究者们设计了很多用于实时药物 识别、筛选和毒性测试的微流控芯片。Chung等人<span class="citation" data-cites="Chung2011Microfluidic"></span>开发了一款包含48个平行阵列腔室的微流控芯片， 其芯片结构如图<a href="#fig:screening" data-reference-type="ref" data-reference="fig:screening">[fig:screening]</a> (a)所示，每一个腔室单元的 直径为1.5mm，并且还设计了一条宽500um的管道用于将线虫和化合物送到每个腔室。所有的腔室在视野中都是可见的，因此 便于观察每个腔室中单个线虫暴露在某种化合物下的反应。Yang等人<span class="citation" data-cites="Yang2013An"></span>开发了一款双层的可以评估体内抗菌活性的微流控芯片， 芯片结构如图<a href="#fig:screening" data-reference-type="ref" data-reference="fig:screening">[fig:screening]</a> (b)所示， 芯片呈现放射状四周分布着32个腔室，中心有一个存储的腔室，有四个“圣诞树”结构的片上浓度梯度生成器<span class="citation" data-cites="Dertinger2001Generation Jeon2000Generation"></span>。利用 这款芯片可以同时研究4种药物32种浓度梯度对线虫的影响。中科院大连化学物理研究所设计制作了一种三夹层的芯片， 其芯片结构如图<a href="#fig:screening" data-reference-type="ref" data-reference="fig:screening">[fig:screening]</a> (c)所示， 该芯片由上层流道层、中间气阀控制层和底层玻璃组成。阀门层有30个长2mm<span class="math inline">×</span>宽1mm<span class="math inline">×</span>厚70um的线虫 培养腔室用于线虫培养和成像，中间有一个废液池用于收集线虫培养腔室中的废液。并应用该芯片探究了高糖对线虫 寿命的影响<span class="citation" data-cites="zhuliguo2016"></span>。华中科技大学刘笔峰教授研究团队也利用类似结构通过实时检测相关基因的表达研究了 线虫在病原体感染情况下的免疫应答<span class="citation" data-cites="hu2018real"></span>。</p>
+<h3 id="sec:intro:analog">机器视觉在线虫研究中的应用</h3>
+<p>研究线虫的运动行为并对其量化在许多线虫研究中(如：神经学、遗传学和毒理学等研究中)起着十分重要的作用， 通过人工观察不仅效率低下而且还会引入人为误差，如在基因筛查中需要在成百上千的线虫中发现行为异常的线虫往往 需要分析几百个小时的视频，因此应用机器视觉的方法量化运动相关的表型具有重要的意义。近年来，研究者们提出 很多自动化线虫图像处理的方法。Dhawan等人<span class="citation" data-cites="De1998Natural"></span>设计一个可以在较低的倍率下同时跟踪多个线虫的系统， 但是该系统只能得到线虫运动方向等信息，无法得到线虫形态和姿势等相关特征(如体长、运动速度等)。 Baek等人<span class="citation" data-cites="Baek2002Using"></span>开发了一个可以在较高倍率下跟踪单个线虫的系统，通过控制载物台的移动可以 保证线虫始终出现在视野中，通过提取94种不同的特征并利用决策树对特征向量进行分类可以区分出行为异常的线虫变种。 在2011年，剑桥大学分子生物学实验室研究人员设计了一款名为Wormtracker的系统，该软件可以包含一套定制的软硬件 系统<span class="citation" data-cites="yemini2013high"></span>。与之前的单线虫跟踪系统相比，可以将成本下降四分之一，该系统另一个优点是能够实现对所有发育阶段的幼虫 的跟踪以及游动状态下单线虫的跟踪。Swierczek等人<span class="citation" data-cites="swierczek2011high"></span>设计了一款名为 Multi-Worm Tracker(MWT)的软件，最多可以实现对120条线虫的跟踪，但只能以离线的方式对采集到的 视频数据进行特征提取无法实现特征的实时提取。另外，当多个线虫的相遇并相互遮挡时，系统只会识别到一个轮廓， 这样会导致跟踪的失败。</p>
+<p>为了解决线虫跟踪过程中线虫轮廓的重叠与遮挡的问题，研究者们提出了一些基于模型的跟踪算法。Restif等人<span class="citation" data-cites="restif2008tracking"></span> 提出一种针对游动线虫的跟踪算法。其将线虫的跟踪分成两个阶段：第一个阶段是通过线虫轮廓运动的历史状态预测下个状态 线虫轮廓运动的速度，结合上一个状态下线虫轮廓的位置可以计算出当前时刻线虫轮廓出现的位置；第二个阶段主要是 调整上个阶段得到的线虫轮廓使其与当前图像中线虫的轮廓重合。 Fontaine和Roussel等人<span class="citation" data-cites="fontaine2007model roussel2014robust"></span>提出了一种 可以对线虫和斑马鱼进行跟踪的算法，其主要思想是通过对线虫轮廓进行参数化建模得到状态空间并通过 迭代卡尔曼滤波器来预测模型参数从而实现线虫的跟踪。针对单个线虫发生自身卷曲时其轮廓识别的困难，Nagy等人 <span class="citation" data-cites="nagy2015generative"></span>提出一种基于统计生成的方法可以识别较为复杂的姿态。</p>
+<p>线虫的图像处理一般分为两个模块，分别是线虫的跟踪(包括线虫轮廓的分割)和线虫的特征提取。线虫的跟踪模块 主要是得到线虫的轮廓，线虫的特征提取模块是利用跟踪到的线虫轮廓进行特征计算。Yemini等人<span class="citation" data-cites="yemini2013database"></span> 对线虫相关的行为表型进行了综述并将其分为四大类：分别为形态特征(如：体长、体宽和面积等)、姿势特征(如： 线虫脊线的水平投影长度、波长以及弯曲的数量等)、运动特征(如：运动速度和运动状态等)、轨迹特征(如：线虫重心 移动轨迹的范围和轨迹图等)。线虫姿态的描述一般是通过在线虫的中间脊线上等距地采样固定数量的点来定义的。 这样得到线虫姿势的状态空间通常是很大的，Stephens等人<span class="citation" data-cites="Stephens2008Dimensionality"></span>提出一种降维的方法 从而可以在较低的维度空间描述线虫的姿势状态。其主要的思想是计算线虫中间脊线的曲率从而得到一个曲率向量， 并对其归一化然后计算这个向量的协方差矩阵，发现其大部分的特征值为零。作者取了四个最大的特征值对应的 特征向量作为四个本征向量，这四个本征向量将构成一个状态空间，任何线虫脊线曲率向量都可以投影到这个空间。 由此得到四个投影长度即可描述线虫的姿势。即可以在一个四维空间中描述线虫的姿势。Restif等人<span class="citation" data-cites="Restif2014CeleST"></span>提出了一种新的 计算特征的方法。其首先计算同一个线虫在不同时刻的脊线曲率向量，并将其按照时间顺序排列，由此即可得到一个曲率矩阵。通过 对这个矩阵做二维离散傅里叶变换，最后基于傅里叶变换的结果计算线虫相关的特征。为了实现线虫行为数据的 共享，Javer等人<span class="citation" data-cites="Javer2018An"></span>提出统一的数据格式支持对视频数据以及对应的特征数据的读取和存储。 并定义了一种中间数据格式表示Worm tracker Commons Object Notation (WCON)，这样可以方便研究者组合使用不同 线虫跟踪模块和特征提取模块。</p>
+<h2 id="sec:intro:analog">存在的问题</h2>
+<p>尽管目前基于微流控技术的药物筛选和毒理测试取得了一定的进展，但高通量、大规模的环境化学品 的毒性评价依然面临很大挑战，其主要原因是目前仍缺乏集成自动化操纵的 微流控线虫分析平台。另一方面，基于微流控背景下的线虫图像处理也面临以下问题：1. 截止到目前大多数关于线虫图像处理报道并没有考虑线虫轮廓分割的问题，因为这些 算法的应用场景通常是线虫和背景形成了一个很强的对比度，因此通过阈值处理即可得到线虫的前景轮廓。但线虫在微流控 芯片中的成像很难形成前景与背景对比度很强的图像，因为由PDMS制作的微流控芯片和线虫都是透明的，如何鲁棒地提取 线虫轮廓的前景是一个难点。2. 考虑到线虫在运动的时候会出现相互遮挡并纠缠在一起以及自身卷曲等问题， 线虫的跟踪是个难点。尽管目前有一些基于模型的跟踪算法可以解决一部分的线虫轮廓相互遮挡的问题， 但这些方法都较为复杂且通常只能解决两个线虫相互纠缠在一起的情形，因为需要对每个线虫的轮廓运动模型建模，大大限制了其能跟踪线虫的数量。 3. 由于线虫是非刚体其形态变化多种多样，线虫在多帧图像中的跟踪也是一个难点。 目前在国内还没有见到关于线虫图像处理相关研究的报道。</p>
+<h2 id="sec:intro:org">研究内容</h2>
+<p>本文主要研究了微流控芯片和机器视觉在基于线虫的药物筛选和毒理测试研究方面的应用，本文的主要 工作如下：</p>
+<ol>
+<li><p>本文首先制作了微流控芯片，并搭建了一个微流控芯片控制的硬件平台， 可以实现线虫的简单培养并可以快速地形成多个 浓度梯度，为线虫在给定化合物下的暴露创造一个精确的微环境。</p></li>
+<li><p>针对微流控背景下线虫前景轮廓分割很容易受到噪声干扰以及鲁棒性不足等问题，而卷积网络在特征提取方面 具有很强的鲁棒性并且基于卷积网络的架构在很多领域的分割任务中取得很大的成功。 本文尝试将卷积网络和条件随机场运用在 线虫前景轮廓分割的任务中，结果表明，与传统的图像分割方法相比，本文提出地分割算法能够显著的改善线虫前景分割的 性能，在像素分类误差指标上达到0.11%的分割精度。</p></li>
+<li><p>针对多线虫跟踪情况下会出现线虫轮廓相互纠缠导致跟踪丢失的问题，本文提出了一种基于深度卷积网络 的网络架构。结果显示，这种方法可以有效的解析出线虫相互纠缠时单个线虫的轮廓。</p></li>
+<li><p>为了展示本文提出的软硬件平台在药物筛选和毒理测试方面的应用优势，运用该平台，本文研究了线性浓度梯度的双氧水对秀丽隐杆线虫 活性的影响，并将摆动频率作为主要的监测特征。</p></li>
+</ol>
+<h2 id="论文章节安排">论文章节安排</h2>
+<p>本文主要针对高通量药物筛选和毒理测试方面的应用，提出了一种基于微流控芯片的集片上 自动化线虫操纵、线虫前景轮廓分割、线虫轮廓解析、线虫轮廓跟踪和线虫特征提取等功能的 软硬件平台。本文总共分为五章：</p>
+<ol>
+<li><p>第一章为绪论，介绍了本文研究的背景及意义并对秀丽隐杆线虫的生物学特性进行介绍。 并介绍了国内外相关领域的研究进展以及目前所存在的问题。</p></li>
+<li><p>第二章主要介绍了平台的硬件部分，本章首先介绍了双层梯度微流控芯片的设计和制作， 并通过染料和荧光实验对芯片方案进行验证。</p></li>
+<li><p>第三章主要介绍了平台的线虫图像处理部分，本章首先介绍了线虫图像处理的总体流程 包括线虫的前景轮廓分割、线虫轮廓的解析、线虫轮廓的跟踪和线虫特征提取。并在本章的后续 部分依次对线虫图像处理流程中的各个部分依次进行介绍。</p></li>
+<li><p>第四章为本文的实验部分，首先介绍了线虫同步化的方法，利用本文提出的软硬件平台 研究了线性浓度梯度双氧水对秀丽隐杆线虫摆动频率的影响，其中包括线性梯度芯片操作的介绍 和实验结果分析。</p></li>
+<li><p>第五章主要对本文的工作进行总结，并指出了下一步的研究内容。</p></li>
+</ol>
+<p><span id="sec:intro:org" label="sec:intro:org">[sec:intro:org]</span></p>
+<h1 id="微流控线虫芯片的设计及硬件平台的搭建">微流控线虫芯片的设计及硬件平台的搭建</h1>
+<h2 id="引言">引言</h2>
+<p>在传统的药物筛选过程中，通过人工的方式在 96 孔板上配置不同浓度的化合物。 然后将线虫暴露在不同浓度的化合物下，观察并记录线虫在不同浓度化合物下的变化。 这种人工稀释的方法不仅存在样品消耗大、通量低和操作繁琐等缺点，而且也不利于观察。 本章设计了两款微流控芯片分别用于线虫的急性毒性实验和对线虫进行长期的培养观察。 为了实现对这两款芯片的进样控制和阀门控制，本课题组开发了自动化阀门控制系统。 同时开发了一个高速的视频采集程序，为后续的线虫特征提取提供了视频数据。</p>
+<h2 id="实验材料与仪器">实验材料与仪器</h2>
+
+
+<table>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">光刻胶SU-83050</td>
+<td style="text-align: left;">美国Microchem公司</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">光刻胶AZ4903</td>
+<td style="text-align: left;">德国Merck Performance Materials公司</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">聚二甲基硅氧烷PDMS( polydimethylsiloxame, RTV 615)</td>
+<td style="text-align: left;">美国 Momentive Performance Materials 公司</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">氟化液FC-40</td>
+<td style="text-align: left;">北京伊诺凯科技有限公司</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">FA1004分析电子天平</td>
+<td style="text-align: left;">上海良平仪器仪表有限公司</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">RC8型匀胶机</td>
+<td style="text-align: left;">美国 Karl Suss公司</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DZF-6020型真空干燥箱</td>
+<td style="text-align: left;">上海新苗医疗器械制造有限公司</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ZXZ-2型旋片式真空泵</td>
+<td style="text-align: left;">浙江谭氏真空设备有限公司</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SMZ-168型体式显微镜</td>
+<td style="text-align: left;">中国麦克奥迪公司</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NMC反应离子式深硅刻蚀系统</td>
+<td style="text-align: left;">北京北方微电子公司</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">IX71型倒置荧光显微镜</td>
+<td style="text-align: left;">日本Olympus公司</td>
+</tr>
+</tbody>
+</table>
+<h2 id="双层线虫梯度芯片的设计及制作">双层线虫梯度芯片的设计及制作</h2>
+<h3 id="arch-design">线虫梯度芯片的设计</h3>
+<p>本文首先设计了一款用于急性毒理实验的双层微流控芯片。 通过微纳加工工艺使第一列腔室的长度线性递减，而第二列腔室的长度线性增加。 且两列腔室的总长度保持不变。因此将每一排前两个腔室的液体相互混合即可形成线性比例稀释的混合 溶液。但在微流控芯片中，流体的雷诺系数Re 变得很小，流体以层流的方法流动， 这使得微管道中的不同液体的混合变得非常缓慢。本文中， 该芯片不同液体的混合使用了本课题组提出的只需一个压力源的基于流体振荡的混合方式<span class="citation" data-cites="cheng2018simple"></span>。 振荡的时候需要在管道的一端构造一个封闭的空腔环境。 当需要混合前两列腔室中的液体时，需要将第三列作为储气腔， 将第三列腔室右边的阀门关闭即可形成封闭的储气腔。 当需要混合前三列腔室中的液体时可以将第四列腔室作为储气腔。</p>
+
+<p><img src="figure/chap2/chip-arch.jpg" alt="image" style="width:13cm" /> <span id="fig:chap2:chip-arch" label="fig:chap2:chip-arch">[fig:chap2:chip-arch]</span></p>
+<p>线虫梯度芯片的设计如图<a href="#fig:chap2:chip-arch" data-reference-type="ref" data-reference="fig:chap2:chip-arch">[fig:chap2:chip-arch]</a>所示，由两层PDMS管道组成。上层为流道层，下层为阀门层。 芯片包含八个阀门和四个进样口。阀门分别控制每列之间的隔绝和开启以及每列腔室之间的相互隔绝和开启。 其中3、5、7号阀门控制4列每列之间的隔绝，而2、4、6号阀门分别控制1、2、3列里9排腔室之间的隔绝，8个阀门将整个芯片分为<span class="math inline">9 × 4</span>个独立的腔室。 4列腔室中第一列腔室的长度依次线性递减，第二列腔室的长度依次线性增加，前两列腔室的长度总和为2mm (两腔室长度的比例从上到下依次为<span class="math inline">9 : 1, 8 : 2, …, 1 : 9</span>)。 第三列和第四列腔室的长度保持恒定分别为1mm和3mm。所有腔室的宽度和高度分别为200um和80um。</p>
+<h3 id="芯片模具加工工艺">芯片模具加工工艺</h3>
+<h4 id="阀门层模具制作">阀门层模具制作</h4>
+<ol>
+<li><p>按照<a href="#arch-design" data-reference-type="ref" data-reference="arch-design">2.3.1</a>小节的结构设计使用AutoCAD绘图软件绘制阀门层的结构图案并制作掩模版。</p></li>
+<li><p>在涂胶之前，需先将3英寸的单抛硅片放在180<span class="math inline"><em></em><sup>∘</sup><em>C</em></span>的烘箱中2小时，然后用氧等离子体去胶机处理60秒。</p></li>
+<li><p>旋涂光刻胶AZ4903并用200rpm的转速预转8秒，然后再用1000rpm的转速甩胶25秒得到22um厚的胶。</p></li>
+<li><p>将硅片放入烘箱中，逐渐升温至<span class="math inline">50<sup>∘</sup><em>C</em></span>，30分钟后再将温度升高至<span class="math inline">90<sup>∘</sup><em>C</em></span>，90分钟后再将其取出。</p></li>
+<li><p>经过紫外曝光后再显影。</p></li>
+<li><p>为了去除硅片表面的水汽，将其放入<span class="math inline">80<sup>∘</sup><em>C</em></span>的烘箱中1小时，最后使用甲基三氯硅烷处理硅片表面5分钟。</p></li>
+</ol>
+<h4 id="流道层模具制作">流道层模具制作</h4>
+<p>由于本文中芯片的管道和腔室的高度被设计成不同的尺寸，且腔室的高度要比管道的高度要高， 所以需要经过两次光刻才能完成流道层模具的制作，第一次光刻采用正胶制作管道结构，第二次光刻采用负胶制作腔室结构。</p>
+<ol>
+<li><p>使用AutoCAD绘图软件分别绘制芯片管道和芯片腔室的结构并打印制作掩模。</p></li>
+<li><p>在涂胶之前，需先将3英寸的单抛硅片放在180<span class="math inline"><em></em><sup>∘</sup><em>C</em></span>的烘箱中2小时，然后用氧等离子体去胶机处理60秒。</p></li>
+<li><p>旋涂光刻胶AZ4903并用200rpm的转速预转8秒，然后再用1000rpm的转速旋涂25秒得到22um厚的胶。</p></li>
+<li><p>将硅片放入烘箱中，逐渐升温至<span class="math inline">50<sup>∘</sup><em>C</em></span>，30分钟后再将温度升高至<span class="math inline">90<sup>∘</sup><em>C</em></span>，90分钟后再将其取出。</p></li>
+<li><p>经过紫外曝光后再显影。</p></li>
+<li><p>将硅片放在热板上分别升高温度分别在<span class="math inline">65<sup>∘</sup><em>C</em></span>、<span class="math inline">95<sup>∘</sup><em>C</em></span>、<span class="math inline">120<sup>∘</sup><em>C</em></span>和<span class="math inline">190<sup>∘</sup><em>C</em></span>分别停留 5min、5min、40min和60min。</p></li>
+<li><p>旋涂负胶SU-8 3050并用500rpm的转速预转8秒，然后再用1500rpm的转速旋涂30秒得到80um厚的胶。</p></li>
+<li><p>将硅片放在<span class="math inline">95<sup>∘</sup><em>C</em></span>的烘箱中恒温40min。</p></li>
+<li><p>经紫外曝光后将硅片放入<span class="math inline">95<sup>∘</sup><em>C</em></span>的烘箱中恒温60min。</p></li>
+<li><p>用对应的显影液对硅片显影，并用异丙酮溶液漂洗，以除去残留的显影液和试剂残留并用氮气将硅片吹干。</p></li>
+<li><p>为了除去水汽，将硅片放入<span class="math inline">80<sup>∘</sup><em>C</em></span>的烘箱中恒温60min,再用甲基硅氧烷处理5min。</p></li>
+</ol>
+<h3 id="线虫梯度芯片的制作">线虫梯度芯片的制作</h3>
+<p>制作好芯片模具后，就可以利用芯片模具进行微流控芯片的制作，下面将介绍双层微流控芯片的制作流程。经过以下流程 最终完成的芯片其实物图如图<a href="#fig:chap2:chip-fabric" data-reference-type="ref" data-reference="fig:chap2:chip-fabric">[fig:chap2:chip-fabric]</a>所示，为了更好的显示芯片结构，芯片的四列腔室 都被打入不同颜色的染料。</p>
+<ol>
+<li><p>将流道层硅片的背面用胶粘在一次性培养皿的底部，起到一个固定的作用。</p></li>
+<li><p>配制PDMS：按照20：1的比例，取20克RTV 615（A液）和1克固化剂（B液）混合搅拌均与，按照5：1的比例， 取20克RTV 615（A液）和4克固化剂（B液）混合搅拌均匀，并将两种比例的混合液放入真空皿中抽真空以排出液体中的气泡， 不断地抽气放气直到液体呈现澄清状。</p></li>
+<li><p>将5：1的PDMS混合液倒入流道层培养皿中，PDMS混合液的厚度大约5mm左右。</p></li>
+<li><p>将阀门层硅片放在甩胶机吸盘的中心位置，并用真空吸住硅片使其固定，将20：1的PDMS混合液倾倒在硅片上， 用400rpm的转速预转20秒后再用1800rpm的转速转60秒即可得到厚约40um的PDMS层。</p></li>
+<li><p>将阀门层模具和流道层模具一起放入<span class="math inline">80<sup>∘</sup><em>C</em></span>的烘箱中恒温30min。</p></li>
+<li><p>用手术刀将培养皿中的PDMS层沿着硅片的边沿切下并取出。再用铲刀沿着芯片上的图案将其切成长方形。</p></li>
+<li><p>在显微镜下将上一步切下的流道层芯片与阀门层对准并粘合在一起。</p></li>
+<li><p>将其放入<span class="math inline">75<sup>∘</sup><em>C</em></span>的烘箱中恒温5个小时进行高温键合，然后将其取出放在无尘纸上进行常温冷却。</p></li>
+<li><p>再用打孔器将芯片的进样口、出样口和阀门入口位置打孔。</p></li>
+<li><p>将芯片和干净的玻璃片一起放入氧等离子体去胶机中处理40秒后，将芯片和玻璃贴合在一起并放入<span class="math inline">80<sup>∘</sup><em>C</em></span>的烘箱中 恒温2小时。</p></li>
+</ol>
+
+<p><img src="figure/chap2/fabric-chip.jpg" alt="image" style="width:9cm" /> <span id="fig:chap2:chip-fabric" label="fig:chap2:chip-fabric">[fig:chap2:chip-fabric]</span></p>
+<h3 id="染料与荧光实验">染料与荧光实验</h3>
+<p>为验证振荡混合效果，我们使用染料及荧光进行验证。如图<a href="#fig:before" data-reference-type="ref" data-reference="fig:before">[fig:before]</a>所示，将第一列腔室打入红色染料， 第二列腔室打入水，将第三列腔室作为振荡腔。在1号进样口施加一个周期为250ms压力值为0.05Mpa的气压， 经过7分钟的振荡，染料已经充分的混合均匀。染料和水完全混合后的效果如图<a href="#fig:after" data-reference-type="ref" data-reference="fig:after">[fig:after]</a>所示，从上到下染料的颜色依次变淡。 如不加振荡，两列液体以自由扩散方式混合，需要2～3个小时，可以看出，振荡方法对快速混合形成梯度有较好的效果， 大大加快了不同液体的混合速率。 为了定量的验证梯度形成的准确性，我们将第一列腔室中的染料替代为浓度为0.1g/L 的荧光素钠溶液(pH=7)， 最终得到0.01～0.09g/L的线性浓度梯度。图<a href="#fig:chap2:fluence" data-reference-type="ref" data-reference="fig:chap2:fluence">[fig:chap2:fluence]</a>为荧光素钠浓度与荧光强度之间的关系。 图中蓝色的线表示线性拟合的结果，可以看出拟合结果的线性度较好。 从而验证了基于微振荡原理的大规模梯度稀释是可行的， 这种方式能够显著加快混合的速度并且只需要一个压力源即可完成振荡混合。 为了验证这种振荡对线虫并无不良后果，我们将线虫打入第三列腔室，并在该参数下振荡， 观察2个小时发现线虫的摆动频率并没有出现太大波动。</p>
+
+
+<figure>
+<img src="figure/chap2/before.jpg" alt="振荡前的芯片图 " id="fig:before" /><figcaption>振荡前的芯片图 <span label="fig:before"></span></figcaption>
+</figure>
+
+
+<figure>
+<img src="figure/chap2/after.png" alt="振荡结束后的芯片图" id="fig:after" /><figcaption>振荡结束后的芯片图<span label="fig:after"></span></figcaption>
+</figure>
+
+<p><span id="fig:oscillation" label="fig:oscillation">[fig:oscillation]</span></p>
+
+<p><img src="figure/chap2/fluence.jpg" alt="image" style="width:9cm" /> <span id="fig:chap2:fluence" label="fig:chap2:fluence">[fig:chap2:fluence]</span></p>
+<h2 id="单层侧向阀门线虫培养芯片的设计及制作">单层侧向阀门线虫培养芯片的设计及制作</h2>
+<h3 id="单层阀门线虫培养芯片的设计">单层阀门线虫培养芯片的设计</h3>
+<p>如图<a href="#fig:chap2:singlelayer" data-reference-type="ref" data-reference="fig:chap2:singlelayer">[fig:chap2:singlelayer]</a>所示是单层侧向阀门线虫培养芯片的设计图。图中可以看出芯片可以分成三个部分，本文 分别用三种不同的颜色表示。最里面的表示线虫的培养腔室。由于腔室的面积比较大且PDMS是柔性材料， 为了防止腔室塌陷，腔室里放置了很多微柱，两边分别表示线虫的进样口和出样口。中间是本文设计的侧向 阀门，通过对阀门施加气压可以控制线虫培养腔室两端通道宽度的大小。这种侧向阀门的设计可以控制腔室中 线虫的进入和排出，相当于一个夹子的作用，从而可以控制腔室中线虫的数量。最外层的设计为线虫提供食物和虫卵的排出。右边为食物的 入口，其中的网状结构可以过滤掉食物中的小碎片。虫卵会通过线虫腔室的侧向通道被排出，从而可以防止不同代的 线虫出现在同一个腔室，可以针对同一代的线虫进行实验观察。 <span id="subsec:chipdesign" label="subsec:chipdesign">[subsec:chipdesign]</span></p>
+
+<p><img src="figure/chap2/arch-chip.png" alt="image" style="width:14cm" /> <span id="fig:chap2:singlelayer" label="fig:chap2:singlelayer">[fig:chap2:singlelayer]</span></p>
+<h3 id="单层阀门芯片模具的制作">单层阀门芯片模具的制作</h3>
+<p>下面开始介绍单层阀门芯片模具的制作工艺流程。</p>
+<ol>
+<li><p>根据芯片结构的尺寸设计运用AutoCAD绘图软件绘制芯片的二维结构并制作掩模版。</p></li>
+<li><p>为了使光刻胶和硅片更容易结合，必须充分去除硅片的水分。将单面抛光的3寸硅片放进 <span class="math inline">180<sup>∘</sup><em>C</em></span>烘箱中恒温<span class="math inline">2 ∼ 3</span>个小时。</p></li>
+<li><p>将硅片从烘箱中取出，待其恢复到室温后，用氮气将硅片表面的杂质吹掉使硅片表面保持干净。 用光刻胶AZ-4903倒在硅片的中心出，使其自然铺开慢慢覆盖硅片表面。然后5000rpm的转速旋涂30s得到胶层厚度 大约为1um。</p></li>
+<li><p>为了去除光刻胶中的有机溶剂并使光刻胶固定需要经过前烘，将涂有光刻胶的硅片放入烘箱中。将烘箱的温度 缓慢升至<span class="math inline">65<sup>∘</sup><em>C</em></span>，恒温30min。然后继续将温度升至<span class="math inline">90<sup>∘</sup><em>C</em></span>，再恒温30min，最后慢慢将烘箱温度降至 室温。</p></li>
+<li><p>将硅片放入光刻机中，曝光前，先打开光刻机汞灯预热10min分钟。将掩模版放在硅片上面并中心对齐，根据 光刻机的厚度调整好曝光时间，经过曝光处理后，将可掩模上的图案转移到光刻胶上。</p></li>
+<li><p>将经过曝光处理的硅片放入烘箱中逐渐升温至<span class="math inline">65<sup>∘</sup><em>C</em></span>并恒温15min，然后再逐渐升温至<span class="math inline">95<sup>∘</sup><em>C</em></span> 恒温40min，最后慢慢将温度降到室温。</p></li>
+<li><p>经过后烘步骤，再用对应的显影液对硅片进行显影，得到清晰的图形后再用氮气将硅片表面吹干。</p></li>
+<li><p>将硅片放入深硅刻蚀机中，进行干法刻蚀。光刻胶覆盖的区域将不会被刻蚀，从而可以将掩模板上的芯片 图案转移到硅片表面。注意根据腔室的高度，控制好刻蚀的厚度。</p></li>
+<li><p>为了使PDMS芯片的制作过程中，PDMS层容易从模具上揭下来，需要对硅片表面进行硅烷化处理。 将硅片放入一次性的培养皿中，在硅片旁的滤纸上滴一滴硅烷化试剂，通过蒸发沉淀的方式完成硅烷化处理。</p></li>
+</ol>
+<h3 id="单层阀门芯片的制作">单层阀门芯片的制作</h3>
+<p>将PDMS浇筑在芯片的模具上待其固化，即可完成</p>
+<ol>
+<li><p>将硅片模具固定在一次性的培养皿的底部。</p></li>
+<li><p>配置PDMS混合液：按照10：1的比例，取20克的PDMS(Sylgard 184)A液和2克的固化剂(B液)混合搅拌均匀， 并将两种比例的混合液放入真空皿中抽真空以排出液体中的气泡，不断地抽气放气直到液体呈现澄清状。</p></li>
+<li><p>将PDMS浇筑在放有硅片模具的培养皿中，浇筑厚度约为5mm，重新放回真空皿中抽出芯片表面的气泡。</p></li>
+<li><p>将培养皿放入<span class="math inline">75<sup>∘</sup><em>C</em></span>的烘箱中恒温一个小时使PDMS得以固化。</p></li>
+<li><p>从烘箱中取出芯片模具，待其自然冷却，用手术刀将PDMS层从模具上揭下来。按照芯片上的图案用PDMS切成方形， 并在所有进口、出口处打孔。</p></li>
+<li><p>将芯片和干净的玻璃片一起放入氧等离子体去胶机中处理40 秒后，将芯 片和玻璃贴合在一起并放入<span class="math inline">80<sup>∘</sup><em>C</em></span>的烘箱中恒温2小时，加强键合效果。</p></li>
+</ol>
+<h3 id="单层侧向阀门线虫固定芯片的测试">单层侧向阀门线虫固定芯片的测试</h3>
+<p>为了测试侧向阀门的设计可以控制腔室两端管道的宽度，本文对测试了不同压力下管道宽度的变化。为了便于视觉 观察，我们向阀门通道注入了红色的染料。图<a href="#fig:chap1:width" data-reference-type="ref" data-reference="fig:chap1:width">[fig:chap1:width]</a>表示向阀门施加不同压力的情况下腔室两端通道的 宽度变化。从图中可以看出在0.3Mpa的压力下，通道的宽度明显变窄了。说明这种侧向阀门的设计可以改变通道的宽度。</p>
+
+
+<figure>
+<img src="figure/chap1/singlelayertest1.jpg" alt="没有对阀门施加压力的情况下通道宽度" id="fig:before" /><figcaption>没有对阀门施加压力的情况下通道宽度<span label="fig:before"></span></figcaption>
+</figure>
+
+
+<figure>
+<img src="figure/chap1/singlelayertest2.jpg" alt="向阀门施加0.3Mpa压力下的通道宽度" id="fig:after" /><figcaption>向阀门施加0.3Mpa压力下的通道宽度<span label="fig:after"></span></figcaption>
+</figure>
+
+<p><span id="fig:chap1:width" label="fig:chap1:width">[fig:chap1:width]</span></p>
+<h2 id="阀门控制系统搭建">阀门控制系统搭建</h2>
+<p>目前，双层的微流控芯片一般由下层的阀门层和上层的流道层组成。阀门层的PDMS薄膜通常很薄，当向气阀通道施加一定的 气压(大约30psig)，阀门层的薄膜会向上顶起。由于上层的流道和下层的气阀通道是上下交叉的，通过控制向气阀通道施加 气压，便可以控制上层流道的通断。另一方面，线虫的压力进样和芯片的振荡都需要对进样口进行气压控制。基于以上需求 ，本课题组开发了自动化阀门控制系统，图<a href="#fig:flow_chart" data-reference-type="ref" data-reference="fig:flow_chart">[fig:flow_chart]</a>为该系统的连接示意图。整个系统由五个模块构成， 我们采用了750W-18L小型空压机作为气泵模块为整个系统提供气压输出，将Arduino作为微控制器控制电磁阀的输出。 Arduino由运行在电脑上的上位机程序控制。</p>
+
+
+<p><span id="fig:flow_chart" label="fig:flow_chart">[fig:flow_chart]</span></p>
+<h2 id="高速视频采集程序的设计">高速视频采集程序的设计</h2>
+<p>线虫视频的高速采集对线虫摆动频率的估计是至关重要的一步。根据采样定理，采集的视频帧率至少是线虫摆动频率的两倍。 除了采样频率的要求外，视频的分辨率等因素同样影响后续线虫图像处理的难度。基于以上考虑，本文选取鑫图公司的DigiRetina 16 COMS相机作为线虫视频的采集模块。其可以通过USB3.0高速传输接口与电脑进行高速图像数据传输，同时该相机在放大倍率20 倍以下的显微成像中，也可以获得分辨率优异的显微图像，另外其内置两个FPGA双核处理器分别用于高清图像处理和 图像输出控制。该相机较好满足了本文对线虫视频采集模块的要求。为了提高视频采集的帧率，本文基于该相机的SDK，开发基于多线程 的视频采集程序。</p>
+<p>对DigiRetina 16相机设备的操作通常分为以下几个步骤，其操作流程如图<a href="#fig:flow_chart1" data-reference-type="ref" data-reference="fig:flow_chart1">[fig:flow_chart1]</a>所示。 第一步为设备初始化，设备初始化使用TUCAM_Api_Init函数进行初始操作，该函数初始化帧采集和控制相机。 第二步为相机初始化，相机初始化使用TUCAM_Dev_Open函数。该函数获取必要的相机句柄来做为其他函数的 输入参数。在调用TUCAM_Dev_Open函数打开相机之后，可以通过相机句柄获取相机的产品信息和设置相机参数。 在图像采集之前，需要在内存中开辟内存空间用于保存采集的图像数据，所需内存的大小与图像的分辨率有关。 内存的分配TUCAM_Buf_Alloc 必须在TUCAM_Cap_Start数据开始捕 获之前调用；而内存的释放TUCAM_Buf_Release 必须在TUCAM_Cap_Stop 停止数据捕获之后 调用。在分配内存后，即可调用TUCAM_Buf_WaitForFrame函数，该函数用于等待数据捕获完成，这个函数属于阻塞函数。 TUCAM_Buf_CopyFrame函数用于将捕获的图像数据传输到电脑内存中，该函数必须在 TUCAM_Buf_WaitForFrame 返回之后调用，否则无法获取正确的图像数据。相机的SDK以动态链接库的形式提供，而本文采用 python作为开发语言进行高速视频采集程序的设计，因此不能直接调用SDK。ctypes是python的第三方库，它提供了与C语言 兼容的数据类型。通过这个第三方库，使python具有调用动态链接库(DLL)的能力。使用opencv提供的VideoWriter模块 进行视频的写入。并使用C函数库中的memcpy内存拷贝函数将内存中的图像数据拷贝到numpy数组指针指向的内存。然后再用 VideoWrite将numpy数组写入硬盘，至此便完成一帧图像的写入。</p>
+
+
+<p><span id="fig:flow_chart1" label="fig:flow_chart1">[fig:flow_chart1]</span></p>
+
+
+<p><span id="fig:image_process_flow" label="fig:image_process_flow">[fig:image_process_flow]</span></p>
+<p>一帧图像从采集到被处理共分为4步骤，如图<a href="#fig:image_process_flow" data-reference-type="ref" data-reference="fig:image_process_flow">[fig:image_process_flow]</a>所示，各部分的时间开销 分别用<span class="math inline"><em>T</em><sub>1</sub>, <em>T</em><sub>2</sub>, <em>T</em><sub>3</sub>, <em>T</em><sub>4</sub></span>表示，下面分别对各部分时间开销进行详细分析：</p>
+<dl>
+<dt>时间开销T1:</dt>
+<dd><p>由TUCAM_Buf_WaitForFrame函数的时间开销决定，曝光时间和图像分辨率影响这部分的时间开销，增加曝光时间或提高图像采集的分辨率 都会使这部分的时间开销变大。</p>
+</dd>
+<dt>时间开销T2:</dt>
+<dd><p>由TUCAM_Buf_CopyFrame函数的时间开销决定，相机驱动程序负责将相机缓存中的图像数据传送到电脑上的一块内存区域。 这个内存块在相机初始化后开辟，图像采集的分辨率、USB线的长度会影响时间开销。</p>
+</dd>
+<dt>时间开销T3:</dt>
+<dd><p>图像处理程序从上一步的内存区域读取图像数据。 图像分辨率、内存拷贝数据的速度等会影响这部分的时间开销。</p>
+</dd>
+<dt>时间开销T4:</dt>
+<dd><p>处理一帧图像的时间对不同的图像处理程序而言是不同，这部分的时间开销与具体的图像处理算法 有关。对于高速视频采集任务而言，这里的时间开销指的是写入硬盘时间。</p>
+</dd>
+</dl>
+<p>从一帧图像的采集到处理也可以分成图像采集阶段(对应图<a href="#fig:image_process_flow" data-reference-type="ref" data-reference="fig:image_process_flow">[fig:image_process_flow]</a>前两个部分)和图像处理阶段 (对应图<a href="#fig:image_process_flow" data-reference-type="ref" data-reference="fig:image_process_flow">[fig:image_process_flow]</a>后两个部分)。如图<a href="#fig:comparison" data-reference-type="ref" data-reference="fig:comparison">[fig:comparison]</a> (b)所示， 为了加速视频采集的帧率，本文采用了两个独立的线程分别负责 图像的采集和将图像写入硬盘(使用python中的concurrent.futures线程库)，这样可以将这两个任务并行，一帧图像从采集到写入硬盘平均所消耗的时间取决于 图像采集和硬盘写入两者所消耗时间的最小值，公式<a href="#eq:paparell" data-reference-type="ref" data-reference="eq:paparell">[eq:paparell]</a>表示多线程模式下视频采集帧率。而在单线程模式下，这两个任务是顺序执行的，一帧图像从采集到写入 硬盘平均所消耗的时间取决于图像采集和硬盘写入两者消耗时间之和，公式<a href="#eq:squential" data-reference-type="ref" data-reference="eq:squential">[eq:squential]</a>表示单线程模式下视频采集 帧率。多线程视频采集相较于单线程视频采集的加速比由公式<a href="#eq:ratio" data-reference-type="ref" data-reference="eq:ratio">[eq:ratio]</a>表示。 <br /><span class="math display">$$\begin{aligned}
+		&amp;\text{多线程下视频采集帧率}=\frac{1}{\min(T_1+T_2,T_3+T_4)} \label{eq:paparell}\\
+		&amp;\text{单线程下视频采集帧率}=\frac{1}{T_1+T_2+T_3+T_4} \label{eq:squential}\\
+		&amp;\text{加速比}=\frac{T_1+T_2+T_3+T_4}{\min(T_1+T_2,T_3+T_4)} \label{eq:ratio}
+	\end{aligned}$$</span><br /></p>
+
+
+
+
+<p><span id="fig:comparison" label="fig:comparison">[fig:comparison]</span></p>
+<p>为研究不同采集分辨率对视频采集帧率的影响，本文测试在不同采集分辨率情况下，各部分时间开销的变化， 表<a href="#tab:resolutions" data-reference-type="ref" data-reference="tab:resolutions">[tab:resolutions]</a>显示了本文的测试结果。结果显示分辨率提高对各部分的时间开销均有显著影响，在 同一分辨率下，多线程视频采集相较于单线程视频采集其帧率均有大幅提高。且随着采集分辨率的提高，加速效果越明显。</p>
+
+
+<p><span id="tab:resolutions" label="tab:resolutions">[tab:resolutions]</span></p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">分辨率</th>
+<th style="text-align: left;"><span class="math inline">4608 × 3456</span></th>
+<th style="text-align: left;"><span class="math inline">2304 × 1728</span></th>
+<th style="text-align: left;"><span class="math inline">1600 × 1200</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">T1</td>
+<td style="text-align: left;">192ms</td>
+<td style="text-align: left;">38.07ms</td>
+<td style="text-align: left;">39.12ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">T2</td>
+<td style="text-align: left;">7.7ms</td>
+<td style="text-align: left;">1.84ms</td>
+<td style="text-align: left;">0.772ms</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">T3</td>
+<td style="text-align: left;">7.9ms</td>
+<td style="text-align: left;">2.28ms</td>
+<td style="text-align: left;">0.773ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">T4</td>
+<td style="text-align: left;">272.4ms</td>
+<td style="text-align: left;">22.89ms</td>
+<td style="text-align: left;">16.81ms</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">多线程帧率</td>
+<td style="text-align: left;">3.5frames/sec</td>
+<td style="text-align: left;">25.0frames/sec</td>
+<td style="text-align: left;">25.0frames/sec</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">单线程帧率</td>
+<td style="text-align: left;">2.0frames/sec</td>
+<td style="text-align: left;">15.0frames/sec</td>
+<td style="text-align: left;">17.4frames/sec</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">加速比</td>
+<td style="text-align: left;">1.75</td>
+<td style="text-align: left;">1.67</td>
+<td style="text-align: left;">1.44</td>
+</tr>
+</tbody>
+</table>
+<h2 id="本章小结">本章小结</h2>
+<p>本章的主要工作为物筛选平台的硬件部分。 首先，介绍了基于振荡原理的线性梯度稀释芯片的结构设计、双层微流控芯片的制作工艺。然后介绍了振荡混合的理论机制， 并在最后通过染料实验和荧光实验证明了线性梯度稀释芯片设计的合理性，实验结果显示基于振荡的混合方式能够有效的缩短 不同液体的混合时间。为了便于对同一代的线虫进行长期观察，本章还设计了另一种单层侧向阀门的线虫培养 芯片，并介绍了单层微流控芯片的制作工艺，芯片的侧向阀门可以控制腔室中线虫的数量，并且可以将线虫卵从腔室中排出，通过对阀门施加不同的压力 发现这种侧向阀门可以很好的控制通道的宽度。最后对阀门控制系统和高速视频采集部分进行了介绍。</p>
+<h1 id="自动化线虫视频分析与特征提取">自动化线虫视频分析与特征提取</h1>
+<h2 id="引言-1">引言</h2>
+<p>在基于线虫的毒理实验中，通常需要观察在给药的过程中线虫生理特征的变化，如在基于线虫的神经毒性实验中 需要对线虫的存活率、身体弯曲频率、头部摆动频率等特征进行统计。在基于线虫的发育毒性实验中，需要对 线虫的身体长度、形状、产卵器形态发育等特征进行统计。在基于线虫的生殖毒性实验中需要对线虫的胚胎发育、 性腺形态发育、后代数目进行统计观察。通过人工观察的方式不仅会引入误差，而且效率低下。由于实验数据分析 上存在瓶颈的情况，严重限制了实验的规模。因此，线虫的自动化视频分析和特征提取对于大规模的毒理实验和药物筛选是至关重要的，</p>
+<p>针对线虫视频特征提取任务的特点，本文采用了“前景轮廓分割——轮廓解析——轮廓跟踪——特征提取”的技术路线。 其中前景轮廓分割和轮廓解析是整个技术路线中关键的一步，其结果直接影响到能否对线虫进行有效的跟踪以及特征提取 等后续步骤。线虫轮廓分割的不完整会导致跟踪的丢失率显著上升。为了提高线虫轮廓分割的精度，本章将深度卷积网络 应用在线虫前景轮廓分割和轮廓解析任务中，并与传统的分割算法做了详细的比较分析。发现基于深度卷积网络的分割 算法能够显著的改善线虫前景轮廓分割的效果。为了实现对线虫轮廓的跟踪，本章提出了一种基于最近邻搜索的跟踪方法 ，在线虫轮廓分割较为完整的情况下，能够实现对线虫的鲁棒跟踪。最后，介绍了线虫体长和摆动频率等特征的计算方法。</p>
+<h2 id="线虫图像处理总体方案介绍">线虫图像处理总体方案介绍</h2>
+<p>图<a href="#fig:flow" data-reference-type="ref" data-reference="fig:flow">[fig:flow]</a>显示了线虫视频特征提取的技术路线流程，共分成四个阶段。 第一个阶段为线虫前景轮廓的分割，从采集的视频中读取一帧图像，并将 线虫轮廓覆盖的区域定义为前景，剩下的区域视为背景。利用图像分割算法进行前景背景分割后得到一幅二值化的图像， 其中1表示前景0表示背景。如果是单线虫的跟踪，则第一个阶段的输出则为线虫的轮廓。 但考虑到多线虫跟踪过程中多个线虫的轮廓会出现 相交甚至纠缠在一起，导致因无法区分单个线虫轮廓从而跟踪丢失。第二个阶段的任务是对多个纠缠在一起的线虫轮廓进行解析， 从而得到单个线虫的轮廓。第三个阶段是线虫轮廓的跟踪，利用线虫轮廓的重心、面积等信息找出相邻两帧图像之间线虫轮廓的对应 关系。第四个阶段为线虫特征计算，利用上一阶段跟踪的线虫轮廓计算线虫体长、运动速度和摆动频率等生理特征。 本章的剩余部分将依次对各个部分进行介绍。</p>
+
+
+<p><span id="fig:flow" label="fig:flow">[fig:flow]</span></p>
+<h2 id="卷积神经网络介绍">卷积神经网络介绍</h2>
+<p>从1956年正式提出人工智能学科的概念以来，人工智能领域的研究经历了60年的发展。期间， 不同学科背景的学者们对如何实现人工智能，提出 了不同的观点并由此产生了不同的学术流派。其中对人工智能领域影响较大的主要有符号主义(Symbolism)、 连接主义(Connectionism)和进化主义(Evolutionism)或控制论学派(Cyberneticsism)等。 目前，在诸多领域取得重大突破的深度学习(Deep learning)技术是连接主义学派的典型代表性技术。其主要受 神经科学的启发，大脑中大量的神经元形成复杂的连接，信号在神经元之间传递。 人工神经网络(Artificial Neural Network, ANN) 由大量相互连接的节点构成，每个节点代表一个特定激活函数的输出，每两个节点之间的连接都有一个权重。通常，神经网络模型 都是由多层网络堆叠而成，前一层网络的输出作为后一层网络的输入。从网络的输出来看，整个网络的输出相当于由许多张量函数嵌套构成的 复合函数，网络模型参数训练依赖的误差反向传播算法其实质是复合函数的链式求导法则。</p>
+<p>卷积网络(Cnvolutional Neural Network,CNN)是人工神经网络模型中的一种，由Yan Lecun于1989年提出并将其用于手写数字识别 <span class="citation" data-cites="le1989handwritten"></span>,卷积操作类似于图像处理中的空间滤波，与之不同的是滤波核作为模型参数是通过学习得到的。 一个典型的卷积网络架构如图<a href="#fig:chap4:cnn" data-reference-type="ref" data-reference="fig:chap4:cnn">[fig:chap4:cnn]</a>所示，通常由卷积层，池化层，全连接层等构成。为了使模型具有更好的泛化 性能，通常在不同的层之间还会加入Dropout层和Batch Normalization层。自2006年以来，研究者们不断对卷积网络进行改进提出 了很多性能优异的网络架构(如：AlexNet网络<span class="citation" data-cites="krizhevsky2012imagenet"></span>、VGG网络<span class="citation" data-cites="simonyan2014very"></span>、 GoogLenet网络<span class="citation" data-cites="szegedy2015going"></span>和ResNet网络<span class="citation" data-cites="Kaiming2015Deep"></span>)，使卷积网络在许多计算机视觉任务中大放异彩。</p>
+
+<p><img src="figure/chap4/CNN-arch.png" alt="image" style="width:12cm" /> <span id="fig:chap4:cnn" label="fig:chap4:cnn">[fig:chap4:cnn]</span></p>
+<h3 id="卷积层">卷积层</h3>
+<p>卷积层是卷积网络中主要的连接层，由于其引入权值共享的机制，与全连接的方式相比将网络的模型参数减小了几个数量级， 且对输入图像的缩放和旋转等变形具有高度不变性。如图<a href="#fig:chap4:cnn-op" data-reference-type="ref" data-reference="fig:chap4:cnn-op">[fig:chap4:cnn-op]</a>所示，卷积操作可以理解为卷积核在输入 张量上的滑动。输出张量的尺寸大小由卷积核的大小、填充的大小、步长和输入张量的大小决定。 公式<a href="#eq:cnn:io" data-reference-type="ref" data-reference="eq:cnn:io">[eq:cnn:io]</a>表示了这一关系，其中<span class="math inline"><em>o</em></span>和<span class="math inline"><em>i</em></span>表示输出张量和输入张量在某一维度的大小，<span class="math inline"><em>p</em></span>和<span class="math inline"><em>s</em></span>分别表示 填充的大小和卷积步长，k表示卷积核的大小，<span class="math inline">⌊ ⌋</span>符号表示向下取整运算。图<a href="#fig:chap4:cnn-op" data-reference-type="ref" data-reference="fig:chap4:cnn-op">[fig:chap4:cnn-op]</a>中<span class="math inline"><em>i</em> = 6, <em>p</em> = 1, <em>k</em> = 3, <em>s</em> = 2</span>根据公式<a href="#eq:cnn:io" data-reference-type="ref" data-reference="eq:cnn:io">[eq:cnn:io]</a> 可以得到<span class="math inline"><em>o</em> = 3</span>。 <br /><span class="math display">$$o = \lfloor \frac{i+2p-k}{s} \rfloor +1 \label{eq:cnn:io}$$</span><br /></p>
+
+<p><img src="figure/chap4/CNN-op.jpg" alt="image" style="width:7cm" /> <span id="fig:chap4:cnn-op" label="fig:chap4:cnn-op">[fig:chap4:cnn-op]</span></p>
+<h3 id="池化层">池化层</h3>
+<p>池化层是一种对输入张量进行降采样的操作，由于池化操作是在输入张量的每一个通道上进行的， 所以不会改变通道的数目。池化操作可以大致分为最大值池化、均值池化和随机池化三种， 这三种池化操作都是通过对输入张量一个邻域内的像素值进行聚合统计实现的。因为部分像素的改变并不会对聚合统计的结果 造成太大的差异，因此池化操作具有一定的尺度不变性。如图<a href="#fig:pooling" data-reference-type="ref" data-reference="fig:pooling">[fig:pooling]</a>是三种池化操作的示意图，最大值 池化求领域内特征点的最大值作为统计输出，均值池化求领域内特征点的平均值作为统计输出，随机池化将领域内 特征点按照其数值大小赋予概率，然后按概率采样得到结果作为统计输出。</p>
+
+<p><img src="figure/chap4/pooling.jpg" alt="image" style="width:8cm" /> <span id="fig:pooling" label="fig:pooling">[fig:pooling]</span></p>
+<h3 id="dropout层">Dropout层</h3>
+<p>为了解决神经网络过拟合的问题，Srivastava和Hinton等人<span class="citation" data-cites="srivastava2014dropout"></span>于2014年提出dropout 方法，有效的提高了网络的泛化能力。如图<a href="#fig:dropout-connection" data-reference-type="ref" data-reference="fig:dropout-connection">[fig:dropout-connection]</a>所示，在网络训练阶段，对每一个神经元以一定的概率 丢弃。从而每次更新网络权值时，网络的连接都是随机的，相当于对采样到的网络进行更新。在网络测试阶段，为了 得到所有随机连接网络的平均输出，这个阶段网络使用全连接的方式并且将网络的权值以一定的比列缩放。大量的实验表明， 采用Dropout的网络具有很好的泛化能力且能够加速网络的收敛。</p>
+
+<figure>
+<img src="figure/chap4/no-dropout.jpg" alt="(b) 训练阶段网络的连接" id="fig:dropout" /><figcaption>(b) 训练阶段网络的连接<span label="fig:dropout"></span></figcaption>
+</figure>
+
+<figure>
+<img src="figure/chap4/dropout.jpg" alt="(b) 训练阶段网络的连接" id="fig:dropout" /><figcaption>(b) 训练阶段网络的连接<span label="fig:dropout"></span></figcaption>
+</figure>
+<p><span id="fig:dropout-connection" label="fig:dropout-connection">[fig:dropout-connection]</span></p>
+<h3 id="batch-normalization层">Batch Normalization层</h3>
+<p>批量标准化(Batch Normalization,BN)是深度学习领域一种非常重要的正则化的方法<span class="citation" data-cites="ioffe2015batch"></span>，有效的 解决了内部方差偏移(Internal Covariate Shift)的问题。内部方差偏移指的是在网络训练的过程中，隐藏层输入的 分布一直在变，导致网络收敛变慢。批量标准化的方法可以使隐藏层的输入分布稳定并近似服从标准正态分布，很多 激活函数(如tanh函数和sigmoid函数等)在0值附近的梯度是最大的，因此采用批量标准化的方法可以获得一个较大梯度， 从而大大提高了网络的训练速度。另外，采用批量标准化的方法还可以降低对初始学习率选取的敏感度。</p>
+<h2 id="基于深度卷积网络的线虫前景轮廓分割">基于深度卷积网络的线虫前景轮廓分割</h2>
+<p>秀丽隐杆线虫由于通体透明，且PDMS制作的微流控芯片也是透明的，所以线虫轮廓的分割是个难点。 通过简单的阈值分割的方法，并不能够很好的分割线虫的轮廓，因为前景像素的灰度值范围在背景像素的灰度范围内。 通过背景减除的方法分割的线虫轮廓。由于图像噪声的影响，会导致分割的线虫轮廓出现断裂、不完整等情况。 这些都会导致线虫跟踪的失败。另一方面，背景的估计需要<span class="math inline">50 ∼ 100</span>帧背景不变的图像。 当需要对线虫进行实时跟踪时，基于背景估计的线虫前景分割算法需要一个启动时间用于背景的估计。 另外，当相机或载物台移动时(如：需要观察不同腔室中的虫子)，由于背景的改变，这种算法还是会失效。 卷积网络作为一种强大的特征提取器在许多计算机视觉任务中取得了很大的成功。</p>
+<p>本课题将卷积网络用于线虫轮廓的前景分割具有如下优势：</p>
+<ol>
+<li><p>满足实时性。与基于背景减除的方法相比，基于卷积网络的分割不需要对图像背景建模， 只依赖当前帧的图像，从而能够保证实时性的要求。</p></li>
+<li><p>能够降低硬件成本。传统的线虫图像处理，为了获得一个背景和线虫轮廓对比度比较高的图像。 通常使用特制的硬件对相机和照明都有很高的要求。卷积网络作为一种强大特征提取器降低了对图像质量的要求。 通常使用特制的硬件对相机和照明都有很高的要求。卷积网络作为一种强大特征提取器降低了对图像质量的要求。</p></li>
+<li><p>鲁棒性更好。传统的线虫轮廓分割算法，通常需要人工的选取一些超参数(如：分割的阈值，形态学操作中核的大小等等)，但由于视频采集过程中照明的变化以及图像噪声的影响很难选取一个最佳的全局参数。 基于卷积网络的分割是一种端到端的方法，输出直接是分割的结果，因此，这种方法几乎不依赖超参数的选取，具有很好的鲁棒性。</p></li>
+</ol>
+<h3 id="传统的图像分割方法分类介绍">传统的图像分割方法分类介绍</h3>
+<p>图像分割是生物医疗图像处理任务最重要的步骤之一，图像分割指的是将图像按照预先定义的 相似度准则将图像划分为若干个区域的过程，相似度准则可以是代表同一个对象的像素 的特性或特征。</p>
+<h4 id="基于像素的图像分割方法">基于像素的图像分割方法</h4>
+<p>基于像素的阈值分割方法通过计算图像灰度直方图的统计信息来确定一个或者多个阈值， 并对图像中每个像素进行比较并分类。OSTU于1979年提出了基于最大类间方差的阈值分割方法<span class="citation" data-cites="otsu1979threshold"></span>， 通过最大化类间方差计算出一个全局最优阈值。与全局阈值法相对应的是自适应阈值的分割，由于每个像素的阈值 是根据其局部邻域内的统计直方图计算的，所以自适应阈值分割方法对于光照不均匀的图像其具有很好的分割效果。除了以上提到 的两种阈值分割方法外，还有最大熵阈值法、双峰法、P参数法等阈值分割方法。</p>
+<p>与阈值分割方法不同，基于像素聚类的分割方法是通过对像素的灰度值或者特征 向量的聚类来实现图像分割的。如彩色图像往往具有R、G、B三个通道，因此可以将每个像素的三个颜色通道的 分量值添加到该像素关联的特征向量里，在特征向量空间根据相似度的度量对像素进行聚类实现图像分割。 这是像素聚类的一个优势，能够利用每个像素更多的信息，而阈值分割 只能利用像素的灰度值。像素聚类往往会产生不连续带有孔洞的区域或者具有单个孤立像素的区域，所以聚类后 一般都需要后处理步骤以消除这些缺陷。常用的后处理方法有区域生长、像素连接和一些基于规则的算法等。 常见的聚类算法有K均值聚类算法<span class="citation" data-cites="forgy1965cluster"></span>和以模糊集合为理论基础的 模糊C均值聚类算法<span class="citation" data-cites="evers1999fuzzy"></span>(Fuzzy cmeans, FCM)等。</p>
+<h4 id="基于边缘的图像分割方法">基于边缘的图像分割方法</h4>
+<p>基于边界的图像分割算法通常使用空间滤波的方法计算图像的一阶梯度和二阶梯度。Sobel算子、Prewitt算子 和Robert算子常被用于 计算图像的一阶梯度信息。Laplacian算子和Kirsch算子常被用于计算图像的二阶梯度信息。使用这些微分算子对图像进行空间滤波 便可以将图像中不同区域的边缘检测出来。由于图像中噪声的影响，这些边缘通常是不连续的。 为了形成闭合的区域，通常需要将这些不连续的边连接起来。常用的算法有Canny边缘检测算法。</p>
+<h4 id="基于区域的图像分割方法">基于区域的图像分割方法</h4>
+<p>基于区域生长的图像分割方法是根据预先定义的相似性准则将相邻的像素或相邻的区域融合形成一个 大的区域。当原图像被过度分割成很多小区域时，区域生长的方法作为一种有效的后处理方法能够处理分割 过程中目标轮廓出现断裂的情况。常用的区域生长方法有对称区域生长以及 将模糊连接度方法和区域生长方法相结合的分割算法等。与区域生长相对应的是区域分裂，这种方法可以将一个大的区域 按照像素或区域之间的相异度准则分割成两个或者更多不相交的小区域， 区域分裂的分割方法可能使目标轮廓产生孔洞。在实际应用中，通常将区域分裂方法和 区域生长方法结合使用，其中四叉树分解法是一种典型的区域分裂合并分割方法。</p>
+<h4 id="交互式的图像分割方法">交互式的图像分割方法</h4>
+<p>所谓交互式的图像分割方法指的是需要用户提供输入的分割方法(如：需要用户提供一个矩形框或者鼠标点击 等输入操作)，是一种半自动化的图像分割方法。目前常见的交互式图像分割方法有基于图论的GrabCut算法<span class="citation" data-cites="rother2004grabcut"></span> 和基于曲线演化的活动轮廓分割方法<span class="citation" data-cites="kass1988snakes tsai2001curve"></span>。GrabCut算法是由Rother等人于2004年提出，通过引入Gibbs能量函数，将前景背景分割 问题转化为一个能量最小化的问题，通过迭代计算的方式将能量最小化。在分割的过程中，用户还可以用画刷将某个区域标记为前景或 背景，然后让算法基于已经分割的结果继续迭代以改善分割的性能。基于活动轮廓的分割方法总是能够获得连续的闭合的轮廓。 特别是将水平集理论应用于活动轮廓分割使得该方法可以自动处理轮廓的分裂和合并，使其更具灵活性。其原理 是曲线在某些力(如：曲率力、梯度力等)的联合作用下呈现扩张或者收缩的运动，最终会收敛于目标轮廓的边缘。但是活动轮廓的分割方法需要 提供一个初始轮廓作为算法的输入，因此也是一种半自动化的图像分割算法。</p>
+<h4 id="基于背景减除的分割方法">基于背景减除的分割方法</h4>
+<p>Zivkovic等人<span class="citation" data-cites="zivkovic2006efficient"></span>在2006年提出了一种基于对单个像素进行混合高斯建模的背景估计的方法。 其主要针对背景固定的视频。以上小节提到的分割方法都只需要用到当前帧图像的信息，而与上面提到的分割算法不同，基于背景减除的分割方法还需要用到当前帧之前的 多帧图像信息，因此是一种基于视频的轮廓分割方法。其原理是对图像中每一个像素用一个混合高斯概率函数建模。模型参数包括高斯均值<span class="math inline"><em>u</em><sub><em>i</em></sub></span>、高斯方差<span class="math inline"><em>σ</em><sub><em>i</em></sub></span>、高斯权重<span class="math inline"><em>w</em><sub><em>i</em></sub></span>。每读取 一帧图像，便对模型做一次更新。预测背景的时候，将所有高斯按照其权重的大小排序，取前<span class="math inline"><em>B</em></span>个高斯分量作为背景，<span class="math inline"><em>B</em></span>由 公式<a href="#eq:gmm" data-reference-type="ref" data-reference="eq:gmm">[eq:gmm]</a>表示，其中参数T表示背景所占的比例。得到每一帧图像的背景后再与当前帧图像相减，经过二值化处理 后便可得到分割后的前景轮廓。 <br /><span class="math display">$$B=\mathop{\arg\min}_{b} \sum_{k=1}^b w_k&gt;T \label{eq:gmm}$$</span><br /></p>
+<h3 id="数据集的制作">数据集的制作</h3>
+<h4 id="数据集的采集">数据集的采集</h4>
+<p>图<a href="#fig:chap5:camera" data-reference-type="ref" data-reference="fig:chap5:camera">[fig:chap5:camera]</a>是线虫图像采集的系统装置图，主要由显微镜、CCD相机、照明系统和微流控芯片四个部分组成，CCD 相机通过数据线连接电脑进行图像数据传输。线虫通过注射泵注入到微流控芯片的腔室内。移动显微镜的载物台使线虫腔室 位于视野的正中央。调节显微镜的放大倍数使线虫腔室充满整个视野。调整显微镜焦距使视野中呈现清晰的图像。调整CCD相机的 曝光时间以获得一个对比度比较高的线虫图像。完成以上步骤后便可以进行线虫视频的采集。</p>
+
+<p><img src="figure/chap5/camera.jpg" alt="image" style="width:8cm" /> <span id="fig:chap5:camera" label="fig:chap5:camera">[fig:chap5:camera]</span></p>
+<h4 id="数据集的标注">数据集的标注</h4>
+<p>高质量的数据集对网络的训练来说至关重要，且数据集的质量决定了神经网络模型性能的上限，通过优化网络架构的方法 也只能逼近这个上限。但数据集的标注通常是一个非常耗时的过程，特别是图像分割任务要对不同的区域标记。目前很多的 图像分割标注工具(如：Labelme<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>和Ratesnake<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a>等)都是采用多边形近似的标注方法， 即在轮廓的四周边缘采集足够多的点，这些点构成的多边形为标注对象的轮廓。由于线虫形态变化复杂，相对于其他目标 的标注往往需要采集更加密集的点才能满足线虫轮廓标注的精度。为了提高线虫图像标注的效率，本文采用了一种半自动的线虫轮廓 标注方法。将Grabcut算法用于线虫轮廓的标注，只需要用矩形框将线虫轮廓框出作为Grabcut算法输入，算法可以自动的分割 出线虫的轮廓，最后再将多个线虫轮廓合成为一个标签图像。通过这种方法，本文制作了一个包含236个样本的数据集，图<a href="#fig:dataset" data-reference-type="ref" data-reference="fig:dataset">[fig:dataset]</a>是数据集部分示例。 整个数据集按照<span class="math inline">8 : 2</span>的比例将其分为训练集与测试集两部分分别用于网络模型的训练与测试。</p>
+
+<p><img src="figure/chap3/dataset.jpg" alt="image" style="width:14cm" /> <span id="fig:dataset" label="fig:dataset">[fig:dataset]</span></p>
+<h3 id="条件随机场模型在分割任务中的应用">条件随机场模型在分割任务中的应用</h3>
+<p>条件随机场(Condition random field, CRF)是概率无向图模型中的一种<span class="citation" data-cites="李航2012统计学习方法"></span>, 目前被很多研究者用于解决图像分割问题并取得了很大的成功<span class="citation" data-cites="zheng2015conditional wang2017adaptive chen2018deeplab"></span>。 其能够对空间中相邻像素之间的关系进行建模，从而可以得到具有空间一致性和更加精细化的分割结果。 如果分割算法没有考虑到相邻像素之间的依赖关系，相当于认为空间中每个像素都是独立的， 这样会导致分割结果中被分割对象的不连续以及可能丢失掉很多细节结构。本文将条件随机场模型应用于 线虫前景轮廓的分割任务中，并通过卷积模块加以实现，这样可以保证整个模型的可微性。</p>
+<p>线虫图像的前景背景分割问题本质上是一个二分类问题，假设有一个标签<span class="math inline"><em>Y</em> = {<em>Y</em><sub>1</sub>, <em>Y</em><sub>2</sub>, ⋯, <em>Y</em><sub><em>N</em></sub>}</span> ,<span class="math inline"><em>N</em></span>表示总的像素，<span class="math inline"><em>Y</em><sub><em>i</em></sub> ∈ {0, 1}</span>则标签<span class="math inline"><em>Y</em></span>总共有<span class="math inline">2<sup><em>N</em></sup></span>种取值。在<span class="math inline"><em>Y</em></span>的所有取值中，概率最大对应的取值 即为最优分割的结果。图像分割问题被转化为基于条件随机场的最大条件概率问题。根据吉布斯分布与条件随机场 的等效性<span class="citation" data-cites="Lafferty2001Conditional"></span>，定义如下基于标签<span class="math inline"><em>Y</em></span>的能量函数： <br /><span class="math display"><em>E</em>(<em>Y</em>|<em>I</em>) = ∑<sub><em>l</em></sub><em>Y</em><sub><em>l</em></sub><em>U</em>(<em>l</em>) + ∑<sub><em>l</em>, <em>k</em></sub><em>Y</em><sub><em>l</em></sub><em>W</em><sub><em>l</em>, <em>k</em></sub><em>Y</em><sub><em>k</em></sub></span><br /> 其中一元项<span class="math inline"><em>U</em>(<em>l</em>) = <em>g</em>(<em>h</em>, <em>l</em>)</span>表示第<span class="math inline"><em>l</em></span>个像素标签<span class="math inline"><em>Y</em><sub><em>l</em></sub></span>取值为1的损失，<span class="math inline"><em>h</em></span>表示图像特征，<span class="math inline"><em>W</em><sub><em>l</em>, <em>k</em></sub></span>表示标签<span class="math inline"><em>Y</em><sub><em>l</em></sub></span>和 标签<span class="math inline"><em>Y</em><sub><em>k</em></sub></span>同时出现的权重。给定一幅线虫图像<span class="math inline"><em>I</em></span>，对应的标签为Y的条件概率为: <br /><span class="math display">$$P(Y|I)=\frac{1}{Z}\exp(-E(Y|I))$$</span><br /> 其中<span class="math inline"><em>Z</em></span>为归一化项。通过平均场近似<span class="citation" data-cites="zheng2015conditional"></span>的方法，标签<span class="math inline"><em>Y</em><sub><em>l</em></sub> = 1</span>可以通过以下迭代的方法求出： <br /><span class="math display"><em>Φ</em>(<em>Y</em><sub><em>l</em></sub> = 1)<sub><em>t</em></sub> = <em>σ</em>(<em>U</em>(<em>l</em>) + ∑<sub><em>k</em></sub><em>W</em><sub><em>l</em>, <em>k</em></sub><em>Φ</em>(<em>Y</em><sub><em>k</em></sub> = 1)<sub><em>t</em> − 1</sub>)</span><br /> 其中<span class="math inline"><em>Φ</em>(<em>Y</em><sub><em>l</em></sub> = 1)</span>表示<span class="math inline"><em>Y</em><sub><em>l</em></sub></span>取值为1的概率，<span class="math inline"><em>σ</em>(<em>a</em>) = 1/(1 + exp ( − <em>a</em>))</span>表示 sigmoid 函数。<span class="math inline"><em>U</em>(<em>l</em>)</span>通过基于图像特征<span class="math inline"><em>h</em></span>的卷积获得。 <span class="math inline">∑<sub><em>k</em></sub><em>W</em><sub><em>l</em>, <em>k</em></sub><em>Φ</em>(<em>Y</em><sub><em>k</em></sub> = 1)<sub><em>t</em> − 1</sub></span>是通过<span class="math inline"><em>t</em> − 1</span>阶段的概率图<span class="math inline"><em>Φ</em><sub><em>t</em> − 1</sub></span>与卷积核<span class="math inline"><em>W</em></span>的卷积操作实现的。在<span class="math inline"><em>t</em></span>时刻的概率图<span class="math inline"><em>Φ</em><sub><em>t</em></sub></span>可以由如下公式计算： <br /><span class="math display">$$\Phi_t=\mathscr{M}(U,W^k)=\begin{cases}
+						\sigma(W^k*U), \quad \quad \quad t=0\\
+						\sigma(W^k*\Phi_{t-1}+U), \quad t=1,2,3
+						\end{cases}$$</span><br /> 其中<span class="math inline">ℳ</span>表示基于共享权重的递归卷积，<span class="math inline"><em>W</em><sup><em>k</em></sup></span>表示共享卷积核，其可以对相邻像素之间的空间 关系进行建模。本文中，我们使用了3次递归卷积实现条件随机场的近似。</p>
+<h3 id="subsec:arch-design">网络结构的设计</h3>
+<p>本文提出了一种用于线虫前景轮廓分割的基于条件随机场的卷积网络模型，图<a href="#fig:chap5:arch" data-reference-type="ref" data-reference="fig:chap5:arch">[fig:chap5:arch]</a>为对应的网络架构。 在卷积分割网络的设计中，融合多种尺度的图像信息对分割任务来说是相当重要的 (如：U-net网络<span class="citation" data-cites="ronneberger2015u"></span>和SegNet网络<span class="citation" data-cites="badrinarayanan2015segnet"></span>架构的设计)， 充分利用不同尺度的信息能够提高目标的定位精度从而减小分割误差，本文在分割网络架构的设计上也结合了多种尺度的 信息。在图<a href="#fig:chap5:arch" data-reference-type="ref" data-reference="fig:chap5:arch">[fig:chap5:arch]</a>中，网络的前半部分通过降采样操作引入新的分支，网络的后半部分通过上采样操作与 上游的分支融合。网络输入张量的尺寸为<span class="math inline">592 × 800 × 3</span>(代表一幅RGB彩色图像)，通过不断分支并降采样，网络 在最底层的分支上达到最小尺度(分辨率为:<span class="math inline">37 × 50</span>)。每次降采样都将分辨率降低为原来的一半，同时将特征通道数数扩大为 原来的两倍。最终网络与最上层的分支融合得到尺寸为<span class="math inline">592 × 800 × 16</span>特征图，将特征图与上一章节介绍的条件随机场 模块相连接构成整个分割网络的结构。</p>
+
+<p><img src="figure/chap5/arch.jpg" alt="image" style="width:13cm" /> <span id="fig:chap5:arch" label="fig:chap5:arch">[fig:chap5:arch]</span></p>
+
+<p><img src="figure/chap4/residualpooling.jpg" alt="image" style="width:9cm" /> <span id="fig:chap4:respool" label="fig:chap4:respool">[fig:chap4:respool]</span></p>
+<p>残差网络<span class="citation" data-cites="he2016deep"></span>能够在增加网络深度的同时使网络依然易于训练，更深的网络往往能够学习到 更加抽象的特征从而提高网络的性能。因此本文使用了如图<a href="#fig:chap4:respool" data-reference-type="ref" data-reference="fig:chap4:respool">[fig:chap4:respool]</a>所示的残差连接模块<span class="citation" data-cites="chu2017multi"></span>作为 图<a href="#fig:chap5:arch" data-reference-type="ref" data-reference="fig:chap5:arch">[fig:chap5:arch]</a>中的基本连接单元，这种残差 模块包含三个连接通路。中间的通路由于使用了降采样，在卷积核尺寸保持不变的情况下，输出神经元的感受野将扩大到原来的两倍。 但由于使用了降采样，导致分辨率下降。但上下两条路径上包含高分辨率的信息。最后将这三个路径的输出叠加在一起作为残差 连接模块的输出。这种连接方式在扩大网络的感受野的同时依然保持原来的分辨率。</p>
+<h3 id="网络模型的训练">网络模型的训练</h3>
+<p>在线虫的实时跟踪任务中，神经网络模型的复杂度和实时性是需要关注的重点。太复杂的网络其推断时间耗时太长往往达不到 实时性的要求，因此必须要在网络结构的设计时加以考虑。而网络的训练和推断所消耗的时间的评估依赖于所采用的机器学习库 和网络模型运行的硬件平台。因此为了评估不同网络模型的复杂度和实时性，表<a href="#tab:hardwareconfig" data-reference-type="ref" data-reference="tab:hardwareconfig">[tab:hardwareconfig]</a> 列出了本文中所有网络模型运行的硬件平台。</p>
+
+
+<p><span id="tab:hardwareconfig" label="tab:hardwareconfig">[tab:hardwareconfig]</span></p>
+<p><span>p<span>80pt</span>p<span>100pt</span></span> 平台参数 &amp; 配置<br />
+操作系统 &amp; Windows 10 家庭版<br />
+系统内存 &amp; 8g<br />
+CPU &amp; i5-6300HQ<br />
+GPU &amp; GTX 950M<br />
+显存 &amp; 4g<br />
+深度学习库 &amp; Tensorflow<br />
+</p>
+<p>增强训练数据的多样性能够有效提高网络的泛化性能，特别是在较小的数据集上网络可能会出现过拟合的情况。为了 提高网络的泛化能力，在网络训练阶段本文对训练集进行了数据增强。本文首先对训练图片以一定概率随机地进行水平镜像翻转或 垂直镜像翻转，并将对应的标签做相同的变换。最后将训练图片加入一定量的高斯白噪声，以提高数据的多样性。 在batchsize参数的选择上，考虑到本文训练图片的分辨率较高(为<span class="math inline">592 × 800 × 3</span>)以及 网络训练采用的硬件GPU显存较小(4g)，因此不能将batchsize设置过大，本文这里将batchsize设为1，即采用单样本 更新的方式训练网络。假设网络的最后一层输出是一张概率图设为<span class="math inline"><em>Φ</em></span>，<span class="math inline"><em>y</em></span>为标签图(只包含0和1)。 公式<a href="#eq:loss" data-reference-type="ref" data-reference="eq:loss">[eq:loss]</a>表示网络训练的交叉熵损失,通过随机梯度下降的方式不断的调整网络的模型参数使交叉熵损失不断下降。 最终网络收敛到局部极小值或者全局最小值，训练损失将不会再下降。图<a href="#fig:train_progress" data-reference-type="ref" data-reference="fig:train_progress">[fig:train_progress]</a>表示训练过程中，训练 损失和像素准确率随迭代次数的变化。图中可以看出随着迭代次数的增加，训练损失不断减小，像素准确率不断增加。网络在第 1000次迭代后，网络基本已经收敛。经测试线虫前景轮廓分割网络推断单张图片的速度为16ms。 <br /><span class="math display"><em>e</em><em>n</em><em>t</em><em>r</em><em>o</em><em>p</em><em>y</em>_<em>l</em><em>o</em><em>s</em><em>s</em> = ∑<sub><em>i</em>, <em>j</em></sub><em>y</em><sub><em>i</em><em>j</em></sub>log <em>Φ</em><sub><em>i</em><em>j</em></sub> + (1 − <em>y</em><sub><em>i</em><em>j</em></sub>)log (1 − <em>Φ</em><sub><em>i</em><em>j</em></sub>)</span><br /></p>
+
+<figure>
+<img src="figure/chap3/loss.jpg" alt="(b) 像素准确率随迭代次数的变化" id="fig:freq" /><figcaption>(b) 像素准确率随迭代次数的变化<span label="fig:freq"></span></figcaption>
+</figure>
+
+<figure>
+<img src="figure/chap3/acc.jpg" alt="(b) 像素准确率随迭代次数的变化" id="fig:freq" /><figcaption>(b) 像素准确率随迭代次数的变化<span label="fig:freq"></span></figcaption>
+</figure>
+<p><span id="fig:train_progress" label="fig:train_progress">[fig:train_progress]</span></p>
+<h3 id="实验结果分析">实验结果分析</h3>
+<h4 id="评价指标">评价指标</h4>
+<p>为了评估线虫前景轮廓分割网络的分割性能，需要一些量化指标来量化分割的结果。本文采用的三个 量化指标分别为：过分割率(Over Segmentation,OR)、欠分割率(Under Segmentation,UR)以及总体 分割误差率(Overall Error Rate,ER)<span class="citation" data-cites="Liu2006Set"></span>。分别由公式<a href="#eq:OR" data-reference-type="ref" data-reference="eq:OR">[eq:OR]</a>、<a href="#eq:UR" data-reference-type="ref" data-reference="eq:UR">[eq:UR]</a>和<a href="#eq:ER" data-reference-type="ref" data-reference="eq:ER">[eq:ER]</a>计算。 其中<span class="math inline"><em>Q</em><sub><em>p</em></sub></span>表示目标像素被误分类为背景像素的数目，<span class="math inline"><em>U</em><sub><em>p</em></sub></span>为背景像素被误分类为目标像素的数目，<span class="math inline"><em>D</em><sub><em>n</em></sub></span>表示背景像素点 的数目，<span class="math inline"><em>D</em><sub><em>p</em></sub></span>表示目标像素点的数目。 <br /><span class="math display"><em>O</em><em>R</em> = <em>Q</em><sub><em>p</em></sub>/<em>D</em><sub><em>p</em></sub></span><br /> <br /><span class="math display"><em>U</em><em>R</em> = <em>U</em><sub><em>p</em></sub>/<em>D</em><sub><em>n</em></sub></span><br /> <br /><span class="math display"><em>E</em><em>R</em> = (<em>Q</em><sub><em>p</em></sub> + <em>U</em><sub><em>p</em></sub>)/(<em>D</em><sub><em>p</em></sub> + <em>D</em><sub><em>n</em></sub>)</span><br /></p>
+<h4 id="分割效果对比">分割效果对比</h4>
+<p>为了比较分析不同算法的前景轮廓分割效果，本小节我们将本章提出的基于条件随机场的卷积分割算法与传统的 前景轮廓提取方法进行了对比。图<a href="#fig:comp_res" data-reference-type="ref" data-reference="fig:comp_res">[fig:comp_res]</a>显示了不同算法的分割结果。从图中可以看出基于模糊C均值聚类的 分割方法和基于阈值分割的OTSU算法的分割结果存在大量的像素分类错误，从原图像可以看出，图像底部微流控芯片结构 部分的亮度较高，但这部分区域的像素应该属于背景像素，这两种基于像素的分割方法都将这些区域分类为前景像素。另一方面，从原图可以看出线虫的轮廓中心处的 亮度较低，这两种算法都将这些区域的像素分类为背景，造成了线虫轮廓的不连续以及存在孔洞。虽然经过后处理步骤 可以针对单张图像过滤掉非线虫轮廓，以及运用形态学图像处理技术可以消除掉线虫轮廓中的空洞和不连续等缺陷，但在 线虫视频的自动化分析任务中，由于每一帧图像的噪声情况都不一样，因此很难确定一个全局的阈值。 基于高斯混合模型的 背景减除方法虽然比基于阈值的分割方法和基于聚类的分割方法分割结果有很大的改善，但线虫的轮廓依然存在不连续的 情况。基于背景减除的分割方法最大的不足在于其只能针对背景固定的视频，因此这种分割具有很大的局限性。 图<a href="#fig:comp_res" data-reference-type="ref" data-reference="fig:comp_res">[fig:comp_res]</a>(f)是本文不带条件随机场模块的卷积网络（去掉CRF模块，同时用<span class="math inline">1 × 1</span>的卷积将特征的 通道数变为1作为网络的输出）分割的结果。 从图中可以看出去掉CRF模块后，卷积分割网络由于没有考虑到空间中相邻像素的相关性，从而导致线虫轮廓的不连续， 分割性能较差。而条件随机场模块能够显著的改善线虫前景轮廓分割中的不连续等情况，与以上的方法相比，其分割性能 要优于其他的方法，而且其分割的性能不依赖于超参数的选择，具有很好的鲁棒性。</p>
+
+
+<p><img src="figure/chap3/img/441.orgin.851.jpg" title="fig:" alt="线虫原图像" /> <img src="figure/chap3/img/441.orgin.1051.jpg" title="fig:" alt="线虫原图像" /> <img src="figure/chap3/img/441.orgin.1051.jpg" title="fig:" alt="线虫原图像" /></p>
+
+<p><img src="figure/chap3/label/441.orgin.1051.jpg" title="fig:" alt="分割标签" /> <img src="figure/chap3/label/441.orgin.1051.jpg" title="fig:" alt="分割标签" /> <img src="figure/chap3/label/441.orgin.1051.jpg" title="fig:" alt="分割标签" /></p>
+
+<p><img src="figure/chap3/test_otsu/441.orgin.1051.jpg" title="fig:" alt="OTSU阈值分割算法结果" /> <img src="figure/chap3/test_otsu/441.orgin.1051.jpg" title="fig:" alt="OTSU阈值分割算法结果" /> <img src="figure/chap3/test_otsu/441.orgin.1051.jpg" title="fig:" alt="OTSU阈值分割算法结果" /></p>
+
+<p><img src="figure/chap3/test_fcm/441.orgin.1051.jpg" title="fig:" alt="模糊C均值聚类算法分割结果" /> <img src="figure/chap3/test_fcm/441.orgin.1051.jpg" title="fig:" alt="模糊C均值聚类算法分割结果" /> <img src="figure/chap3/test_fcm/441.orgin.1051.jpg" title="fig:" alt="模糊C均值聚类算法分割结果" /></p>
+
+<p><img src="figure/chap3/test_bksub/441.orgin.1051.jpg" title="fig:" alt="(e)混合高斯背景建模的分割算法结果" /> <img src="figure/chap3/test_bksub/441.orgin.1051.jpg" title="fig:" alt="(e)混合高斯背景建模的分割算法结果" /> <img src="figure/chap3/test_bksub/441.orgin.1051.jpg" title="fig:" alt="(e)混合高斯背景建模的分割算法结果" /></p>
+
+
+
+
+<p><img src="figure/chap3/test2/441.orgin.1051.jpg" title="fig:" alt="(f)本文算法分割结果（没有条件随机场模块）" /> <img src="figure/chap3/test2/441.orgin.1051.jpg" title="fig:" alt="(f)本文算法分割结果（没有条件随机场模块）" /> <img src="figure/chap3/test2/441.orgin.1051.jpg" title="fig:" alt="(f)本文算法分割结果（没有条件随机场模块）" /></p>
+
+<p><img src="figure/chap3/test1/441.orgin.1051.jpg" title="fig:" alt="(g)本文算法分割结果" /> <img src="figure/chap3/test1/441.orgin.1051.jpg" title="fig:" alt="(g)本文算法分割结果" /> <img src="figure/chap3/test1/441.orgin.1051.jpg" title="fig:" alt="(g)本文算法分割结果" /></p>
+
+<p><span id="fig:comp_res" label="fig:comp_res">[fig:comp_res]</span></p>
+<h4 id="分割性能的量化分析">分割性能的量化分析</h4>
+
+
+<p><span id="tab:metrics" label="tab:metrics">[tab:metrics]</span></p>
+<p><span>&gt;p<span>80pt</span>&gt;p<span>60pt</span>&gt;p<span>60pt</span>&gt;p<span>60pt</span></span> 算法&amp;过分割率&amp;欠分割率&amp;总体误差<br />
+本文算法 &amp;12.29% &amp;0.01% &amp; 0.11%<br />
+本文算法<br />
+（无CRF模块）&amp;26.93% &amp; 0.03% &amp;0.17%<br />
+背景减除 &amp;19.55% &amp; 0.02%&amp; 0.12%<br />
+OTSU算法 &amp;26.62% &amp; 2.12% &amp; 2.25%<br />
+FCM 算法 &amp;27.41% &amp; 2.15% &amp; 2.28%<br />
+</p>
+<p>为了定量地分析不同分割算法的性能，本文采用了三种性能指标对不同算法在测试集上分割的结果进行量化，结果如表<a href="#tab:metrics" data-reference-type="ref" data-reference="tab:metrics">[tab:metrics]</a>所示。 从表中可以看出基于阈值分割的OTSU算法和基于聚类的FCM算法在过分割率、欠分割率以及总体误差三个指标上均表现较差。 另外，没有使用CRF的卷积分割网络在三个指标上的表现均弱于基于背景减除的分割方法。但在卷积网络后端加入CRF模块后，网络的分割性能 有了很大的提升，其分割性能要优于其他的分割算法，总体的像素误差下降到<span class="math inline">0.11%</span>。</p>
+<h2 id="基于深度卷积网络的线虫轮廓解析">基于深度卷积网络的线虫轮廓解析</h2>
+<p>多线虫跟踪问题中，多线虫轮廓之间相互纠缠是造成线虫跟踪丢失的主要原因，是实现单个线虫长期跟踪的关键。 如图<a href="#fig:multi-worms" data-reference-type="ref" data-reference="fig:multi-worms">[fig:multi-worms]</a>所示，是一张经过线虫前景轮廓分割后得到的一幅二值化图片， 图中线虫轮廓之间出现严重的相互遮挡的情况，多个单线虫轮廓融合为一个连通域 。虽然人眼可以很轻松的辨别出图中所有单个线虫的轮廓，但自动化地解析出单个线虫的轮廓却十分困难，尽管深度学习在图像分割任务中取得了很大的成功， 但线虫轮廓的解析不同于图像分割，因此不能直接转为一个端到端的学习问题。 Yurchenko等人<span class="citation" data-cites="yurchenko2017parsing"></span>于2017年提出了一种线虫解析的算法，该算法首先在经过前景背景分割的 二值化图像上随机选取许多的图像块，使其尽可能覆盖所有的线虫轮廓，并通过神经网络提取每一个图像块的特征向量。 然后建立一个大的线虫姿势搜索库，库中包含大量的线虫姿势和与之对应的特征向量。将图像块对应的特征向量作为键值 通过最近邻的方式在线虫姿势搜索库中搜索到最佳的匹配，从而得到线虫的姿势估计。最后通过整数规划的方式去除掉 重复的线虫轮廓，从而得到线虫解析的结果。该算法的不足在于，为了使这个库能够包含各种大小和姿势的线虫 ，需要建立一个非常大的搜索库(大约4百万)。库的规模限制了轮廓解析的精度，所以只能得到近似的解析结果。另一面方面 在一个很大的库中搜索匹配需要大量的时间，因此实时性是该算法的另一个不足。 本文提出了一种基于深度卷积网络的线虫轮廓解析算法尝试解决这一问题，与以上提到的轮廓解析算法不同，本文提出的轮廓 解析算法不需要建立搜索库，而是直接将图像块输入到网络，网络可以自动输出中央线虫的轮廓。由于神经网络模型在推断 阶段速度很快，本文提出的线虫轮廓解析算法具有很好的实时性能。</p>
+
+<p><img src="figure/chap4/multi-worm.jpg" alt="image" /> <span id="fig:angle" label="fig:angle">[fig:angle]</span></p>
+
+<p><img src="figure/chap4/multi-worm1.jpg" alt="image" /> <span id="fig:freq" label="fig:freq">[fig:freq]</span></p>
+<p><span id="fig:multi-worms" label="fig:multi-worms">[fig:multi-worms]</span></p>
+<h3 id="线虫轮廓解析方法介绍">线虫轮廓解析方法介绍</h3>
+<p>本文提出的线虫轮廓解析算法的关键在于设计了一个只对位于图片中央的线虫轮廓敏感的神经网络，而对非图片中央位置的线虫轮廓不敏感。当输入 一幅包含多线虫轮廓的前景图像时，网络的输出为中央线虫轮廓的图像。 形式化的描述如下：假设一幅图片中包含<span class="math inline"><em>N</em> + 1</span>个线虫轮廓，定义一个集合<span class="math inline"><em>E</em> = {<em>e</em><sub>0</sub>, <em>e</em><sub>1</sub>, …, <em>e</em><sub><em>N</em></sub>}</span>,其中<span class="math inline"><em>e</em><sub>0</sub></span>表示轮廓位于图片 中央的线虫，<span class="math inline"><em>e</em><sub><em>i</em></sub></span>包含线虫重心坐标、轮廓以及方向等信息。<span class="math inline"><em>I</em>(<em>E</em>) = <em>R</em>({<em>e</em><sub>0</sub>, <em>e</em><sub>1</sub>, …, <em>e</em><sub><em>N</em></sub>}; <em>ξ</em>)</span>表示由集合E渲染得到的包含<span class="math inline"><em>N</em> + 1</span>个线虫的图片，R表示 渲染函数，<span class="math inline"><em>ξ</em></span>表示随机噪声。<span class="math inline"><em>I</em>(<em>E</em><sub>0</sub>) = <em>R</em>({<em>e</em><sub>0</sub>}; <em>ξ</em>)</span>表示由中间线虫渲染得到的图片。我们希望得到这样的映射 <span class="math inline"><em>S</em> : <em>I</em>(<em>E</em>) → <em>I</em>(<em>E</em><sub>0</sub>)</span>，映射函数<span class="math inline"><em>S</em></span>通过一个深度卷积网络加以实现，本文将其命名为SingleOut-net网络。</p>
+
+
+<p><span id="fig:chap4:flow" label="fig:chap4:flow">[fig:chap4:flow]</span></p>
+<p>如图<a href="#fig:chap4:flow" data-reference-type="ref" data-reference="fig:chap4:flow">[fig:chap4:flow]</a>是本文提出的线虫轮廓解析方法的主要流程。首先假定已经从前景轮廓分割的步骤中已经得到 包含多线虫轮廓的二值化图像如图<a href="#fig:multi-worms" data-reference-type="ref" data-reference="fig:multi-worms">[fig:multi-worms]</a>所示，轮廓解析算法的第一步是在该二值化图像的前景像素中(即非零值像素)产生足够多的随机点使得每个线虫轮廓上至少 包含一个随机点。然后以这些随机像素点为中心在原图中获取固定尺寸的图像块，将这些图像块输入到训练好的SingleOut-Net 网络，网络输出为图像块中央位置的线虫轮廓图像。对SingleOut-Net输出的图像进行简单的后处理及二值化操作， 然后运用轮廓提取算法即可得到这些图像块中央位置线虫的轮廓。由于在随机点产生阶段，同一个线虫轮廓包含不止一个随机点。因此由SingleOut-Net网络输出 的线虫轮廓在原图中可能代表同一个线虫，因此需要经过轮廓滤除步骤。通过滤除掉重复的线虫轮廓以及 不完整的轮廓，最终可以得到解析的结果。算法<a href="#algo:worm_parser" data-reference-type="ref" data-reference="algo:worm_parser">[algo:worm_parser]</a>描述线虫轮廓解析的整个算法实现。</p>
+<p><span id="algo:worm_parser" label="algo:worm_parser">[algo:worm_parser]</span></p>
+<p><span class="math inline"><em>W</em><em>o</em><em>r</em><em>m</em>_<em>I</em><em>m</em><em>a</em><em>g</em><em>e</em></span>待解析的线虫图像，算法的输入。 输出轮廓解析的结果 <span class="math inline"><em>S</em><em>e</em><em>e</em><em>d</em>_<em>p</em><em>o</em><em>i</em><em>n</em><em>t</em><em>s</em> ← <em>G</em><em>e</em><em>n</em><em>e</em><em>r</em><em>a</em><em>t</em><em>e</em>_<em>s</em><em>e</em><em>e</em><em>d</em>_<em>p</em><em>o</em><em>i</em><em>n</em><em>t</em><em>s</em>(<em>W</em><em>o</em><em>r</em><em>m</em>_<em>I</em><em>m</em><em>a</em><em>g</em><em>e</em>)</span> <span class="math inline"><em>I</em><em>m</em><em>a</em><em>g</em><em>e</em>_<em>P</em><em>a</em><em>t</em><em>c</em><em>h</em><em>s</em> ← <em>C</em><em>r</em><em>o</em><em>p</em>_<em>I</em><em>m</em><em>a</em><em>g</em><em>e</em>(<em>W</em><em>o</em><em>r</em><em>m</em>_<em>I</em><em>m</em><em>a</em><em>g</em><em>e</em>, <em>S</em><em>e</em><em>e</em><em>d</em>_<em>p</em><em>o</em><em>i</em><em>n</em><em>t</em><em>s</em>)</span> <span class="math inline"><em>S</em><em>i</em><em>n</em><em>g</em><em>l</em><em>e</em><em>O</em><em>u</em><em>t</em>_<em>O</em><em>u</em><em>t</em><em>p</em><em>u</em><em>t</em><em>I</em><em>m</em><em>a</em><em>g</em><em>e</em><em>s</em> ← []</span> <span class="math inline"><em>S</em><em>i</em><em>n</em><em>g</em><em>l</em><em>e</em><em>O</em><em>u</em><em>t</em>_<em>O</em><em>u</em><em>t</em><em>p</em><em>u</em><em>t</em><em>I</em><em>m</em><em>a</em><em>g</em><em>e</em><em>s</em>[<em>i</em>] ← <em>S</em><em>i</em><em>n</em><em>g</em><em>l</em><em>e</em><em>O</em><em>u</em><em>t</em>_<em>N</em><em>e</em><em>t</em>(<em>I</em><em>m</em><em>a</em><em>g</em><em>e</em>_<em>P</em><em>a</em><em>t</em><em>c</em><em>h</em><em>s</em>[<em>i</em>])</span> <span class="math inline"><em>S</em><em>i</em><em>n</em><em>g</em><em>l</em><em>e</em><em>O</em><em>u</em><em>t</em>_<em>O</em><em>u</em><em>t</em><em>p</em><em>u</em><em>t</em><em>I</em><em>m</em><em>a</em><em>g</em><em>e</em><em>s</em>[<em>i</em>] ← <em>P</em><em>o</em><em>s</em><em>t</em>_<em>P</em><em>r</em><em>o</em><em>c</em><em>e</em><em>s</em><em>s</em><em>I</em><em>m</em><em>a</em><em>g</em><em>e</em>(<em>S</em><em>i</em><em>n</em><em>g</em><em>l</em><em>e</em><em>O</em><em>u</em><em>t</em>_<em>O</em><em>u</em><em>t</em><em>p</em><em>u</em><em>t</em><em>I</em><em>m</em><em>a</em><em>g</em><em>e</em><em>s</em>[<em>i</em>])</span> <span class="math inline"><em>W</em><em>o</em><em>r</em><em>m</em>_<em>C</em><em>o</em><em>n</em><em>t</em><em>o</em><em>u</em><em>r</em><em>s</em> ← <em>E</em><em>x</em><em>t</em><em>r</em><em>a</em><em>c</em><em>t</em><em>e</em>_<em>W</em><em>o</em><em>r</em><em>m</em><em>C</em><em>o</em><em>n</em><em>t</em><em>o</em><em>u</em><em>r</em>(<em>S</em><em>i</em><em>n</em><em>g</em><em>l</em><em>e</em><em>O</em><em>u</em><em>t</em>_<em>O</em><em>u</em><em>t</em><em>p</em><em>u</em><em>t</em><em>I</em><em>m</em><em>a</em><em>g</em><em>e</em><em>s</em>)</span> <span class="math inline"><em>r</em><em>e</em><em>s</em><em>u</em><em>l</em><em>t</em><em>e</em> ← <em>F</em><em>i</em><em>l</em><em>t</em><em>e</em><em>r</em>_<em>W</em><em>o</em><em>r</em><em>m</em><em>C</em><em>o</em><em>n</em><em>t</em><em>o</em><em>u</em><em>r</em>(<em>W</em><em>o</em><em>r</em><em>m</em>_<em>C</em><em>o</em><em>n</em><em>t</em><em>o</em><em>u</em><em>r</em><em>s</em>)</span> <span class="math inline"><em>r</em><em>e</em><em>s</em><em>u</em><em>l</em><em>t</em><em>e</em></span></p>
+
+<p><img src="figure/chap4/rand_seed.png" alt="image" style="width:9cm" /> <span id="fig:chap4:rand_seed" label="fig:chap4:rand_seed">[fig:chap4:rand_seed]</span></p>
+<h3 id="随机点的产生">随机点的产生</h3>
+<p>随机点的产生直接影响线虫轮廓解析方法的效率，随机点的数量过大导致SingleOut-Net网络需要对大量的图像块处理，需要很大 的计算量，从而导致解析一帧图像需要大量的时间。但随机点的数量太少，可能导致有些线虫的轮廓上没有随机点覆盖， 这些线虫的轮廓将得不到解析。实验发现，直接在原图像中生成随机点的方式非常的低效， 主要是因为前景像素只占原图中总像素的一小部分，大部分的随机点落在了背景里。 本文提出一种高效的随机点产生方法。首先，提取原图中所有的轮廓，然后在每个轮廓的边缘上等距 的采样一定数量的边界点，最后在边界点的邻域内再采样。这种随机点产生的方法只需要产生少量的随机点即可覆盖所有的 线虫轮廓，最终采样的结果如图<a href="#fig:chap4:rand_seed" data-reference-type="ref" data-reference="fig:chap4:rand_seed">[fig:chap4:rand_seed]</a>所示。</p>
+
+<p><img src="figure/chap4/singleout.jpg" alt="image" style="width:12cm" /> <span id="fig:chap4:singleout" label="fig:chap4:singleout">[fig:chap4:singleout]</span></p>
+
+<h3 id="singleout-net网络输出后处理">SingleOut-Net网络输出后处理</h3>
+<p>图<a href="#fig:chap4:singleout" data-reference-type="ref" data-reference="fig:chap4:singleout">[fig:chap4:singleout]</a>显示了利用训练好的SingleOut-Net网络对部分图像块处理的结果。从图中可以看出SingleOut-Net 网络成功地将位于图片中央的线虫轮廓从周围的线虫轮廓中分离出来。经过二值化等后处理步骤后，再用轮廓提取算法即可得到所有图像块 对应的中央线虫的轮廓。 但由于在随机点生成的过程中同一个线虫轮廓上可能包含 多个随机点。所以在SingleOut-Net输出的结果中，同一个线虫的轮廓可能出现了多次。通过计算两个线虫轮廓在原图坐标中面积的 重合度可以判定这两个轮廓是否表示同一个线虫，当两个轮廓的面积重合度大于一个设定的阈值时，则只需保留其中的一个轮廓。当一个轮廓完全被另一个轮廓包含时，则保留 轮廓面积较大的轮廓。过滤掉重复的轮廓以及不完整的轮廓后即可得到解析的结果，最终的解析结果如图<a href="#fig:chap4:parser" data-reference-type="ref" data-reference="fig:chap4:parser">[fig:chap4:parser]</a> 所示。</p>
+
+<p><img src="figure/chap4/Parser_Worms5.jpg" alt="image" style="width:13cm" /> <span id="fig:chap4:parser" label="fig:chap4:parser">[fig:chap4:parser]</span></p>
+<h3 id="dataset">数据集的制作</h3>
+<p>SingleOut-Net网络的训练需要大量标定的数据集，本文采用了人工生成的数据集来训练网络的模型参数。 数据集的制作流程如图<a href="#fig:chap4:dataset" data-reference-type="ref" data-reference="fig:chap4:dataset">[fig:chap4:dataset]</a>所示。 BBBC010线虫数据集<span class="citation" data-cites="Ljosa2012Annotated"></span>由马萨诸塞州综合医院Fred Ausubel教授的实验室采集并发布， 该数据集中包含1407张经过前景背景分割的单线虫二值化图像。数据集制作的第一步需要从BBBC010数据集中 提取所有单线虫的轮廓得到一个线虫的轮廓库(库中包含1407个不同姿势和大小的单线虫轮廓)。然后从单线虫的轮廓库中随机地选取一个线虫轮廓在一个 分辨率为<span class="math inline">256 × 256</span>的背景图(像素值全为零)的中央画出。这一步得到的图作为网络训练的标签。继续从 线虫轮廓库中随机选取若干个线虫的轮廓并在标签图像中随机的画出。至此，便得到了SingleOut-Net网络 训练的的输入图像以及对应的 标签。为了加快网络的收敛速度，本文将数据集的输入以及对应的标签图像归一化到<span class="math inline">0 ∼ 1</span>范围内， 并加入一定量的高斯白噪声。 通常数据集的多样性可以使神经网络学习到更多的模式，从而使网络具有更好的泛化能力。 为了进一步增强数据集的多样性，本文对每个随机选取的单线虫轮廓进行随机的缩放和随机的旋转操作。</p>
+
+<p><img src="figure/chap4/dataset.jpg" alt="image" style="width:12cm" /> <span id="fig:chap4:dataset" label="fig:chap4:dataset">[fig:chap4:dataset]</span></p>
+<h3 id="archtecture">网络结构的设计</h3>
+
+<p><img src="figure/chap4/arch1.jpg" alt="image" style="width:14cm" /> <span id="fig:chap4:netarch" label="fig:chap4:netarch">[fig:chap4:netarch]</span></p>
+<p>如图<a href="#fig:chap4:netarch" data-reference-type="ref" data-reference="fig:chap4:netarch">[fig:chap4:netarch]</a>所示是SingleOut-Net的网络结构。网络的输入为<span class="math inline">256 × 256 × 1</span>的张量， 输出也为相同尺寸的张量，整个网络架构由两个模块级联构成。 第一个模块为一个类似于U-Net网络<span class="citation" data-cites="ronneberger2015u"></span>的卷积模块，在整个网络架构中 相当于一个编码器。图中的方块都表示本章<a href="#subsec:arch-design" data-reference-type="ref" data-reference="subsec:arch-design">3.4.4</a>节介绍的残差连接单元。第一个卷积模块包含两条路径，分别为降采样路径和 上采样路径。降采样路径上每经过一个残差连接模块后面都连接一个降采样层， 降采样层将输入张量的尺寸减小一倍同时将通道数扩大一倍。 降采样层通过一个卷积层实现，其卷积核的大小为<span class="math inline">2 × 2</span>步长为2，卷积后紧跟着的是Batch Normalization 层 和激活函数层。由于Relu函数<span class="citation" data-cites="xu2015empirical"></span>具有克服梯度消失和加快网络收敛等优势，这里使用了Relu激活函数。 上采样路径与降采样路径类似，只不过将降采样层换成上采样层。上采样层通过反卷积实现，其卷积核大小为<span class="math inline">2 × 2</span>步长为2。 在图<a href="#fig:chap4:netarch" data-reference-type="ref" data-reference="fig:chap4:netarch">[fig:chap4:netarch]</a>中，上采样层的输入由两部分构成， 分别为降采样路径中相同分辨率的张量和上采样路径中前面的张量，图中的加号表示张量的相加操作。 第二个卷积模块为PixelCNN<span class="citation" data-cites="van2016conditional"></span>模块，将其作为解码器。PixelCNN网络由Deepmind于2016年提出并用于 条件图像生成，可以生成非常逼真的图像。本文将其应用在SingleOut-Net网络中作为解码器来生成中央线虫的图像。最后通过一个<span class="math inline">1 × 1</span> 的卷积将特征通道数变为输出图像的通道数，并通过Sigmoid激活函数将输出的数值限制在<span class="math inline">0 ∼ 1</span>范围内。最终的输出是一个通道数为1 的概率图。概率图中每一个像素值的大小表示该像素属于中央线虫轮廓的概率。</p>
+<h3 id="评价指标-1">评价指标</h3>
+<h4 id="评价指标-2">评价指标</h4>
+<p>为了更好的对不同的网络架构进行量化分析和性能比较，因此需要选取一些评价指标。本文提出的SingleOut-Net网络 用于判别图像中每个像素是否属于中央线虫轮廓像素，所以是一个像素二分类网络。本文将像素分类误差作为网络评价指标， 像素分类误差由公式<a href="#eq:metrics" data-reference-type="ref" data-reference="eq:metrics">[eq:metrics]</a>表示。 <br /><span class="math display">$$\text{像素误差} =1- \frac{\text{被正确分类的像素数目}}{\text{总的像素数目}} \label{eq:metrics}$$</span><br /></p>
+<h3 id="网络的训练">网络的训练</h3>
+<p>根据<a href="#dataset" data-reference-type="ref" data-reference="dataset">3.5.4</a>节介绍的数据集生成方法，可以生成任意大小的训练集。但为了节省内存开销，本文采用了训练集动态生成的方法 ，即在训练阶段每个minibatch的样本图片都是动态生成的。但动态生成训练样本需要一定的时间开销，从而使网络训练时间变长。为了缩短网络训练时间以及在限定 时间内探索更优的网络架构，本文将数据生成和网络训练这两个任务并行，即用一个专门的线程负责数据集的生成。另外为了比较 不同网络架构的性能，测试集的样本应该保持不变，而本文中的数据集是动态随机生成的。为了获得一个不变的测试集，在网络训练和模型测试阶段，本文分别采用了 两个不同的随机数种子初始化随机数生成器。</p>
+
+<p><img src="figure/chap4/loss.jpg" alt="image" style="width:13cm" /> <span id="fig:chap4:loss" label="fig:chap4:loss">[fig:chap4:loss]</span></p>
+<p>神经网络模型的训练分为前向传播、反向传播和权值更新三个步骤。batchsize作为一个重要的超参数，其决定将多少样本作为一个整体估计梯度下降的方向。如果将其设置得过大， 会导致网络模型很难跳出局部最小值点;如果设置得过小，则很难获得一个准确的梯度下降方向， 在本文中batchsize的大小为4。 神经网络的优化算法大致可以分为三大类：基于一阶微分的最优化方法(随机梯度下降)、基于二阶微分 的最优化方法(牛顿法)以及基于二阶微分近似的方法(AdaDelta算法<span class="citation" data-cites="zeiler2012adadelta"></span>和Adam算法<span class="citation" data-cites="kinga2015method"></span>等)。随机梯度下降的最优化方法计算量 最小，但网络的收敛速度慢。牛顿法由于利用了二阶梯度信息，与其他的最优化方法相比具有更好的收敛性能，但由于要计算 Hessian矩阵所以计算量很大。于是研究者们提出了很多基于二阶微分的近似方法，这些最优化方法是计算量和 收敛性能的一个折中。本文采用了Adam最优化方法优化网络模型并将学习率设置为0.0002，并将交叉熵损失作为训练的损失函数。 训练40个epoch(每个epoch包含1000个batch)后网络已经完全收敛， 图<a href="#fig:chap4:loss" data-reference-type="ref" data-reference="fig:chap4:loss">[fig:chap4:loss]</a>表示损失函数随epoch数的增加而下降，经过 20个epoch后 网络已经基本收敛。</p>
+<p>为了观察网络训练过程中SingleOut-Net网络性能的变化，本文对网络模型每隔100次迭代进行一次测试，图<a href="#fig:chap4:progress" data-reference-type="ref" data-reference="fig:chap4:progress">[fig:chap4:progress]</a> 显示了网络训练过程中网络模型测试的结果。从图中可以看出随着网络模型迭代次数的增加SingleOut-Net网络逐渐学会过滤掉非中央 线虫的轮廓，只保留中央线虫的轮廓。</p>
+
+<p><img src="figure/chap4/progress.jpg" alt="image" style="width:15cm" /> <span id="fig:chap4:progress" label="fig:chap4:progress">[fig:chap4:progress]</span></p>
+<h3 id="测试结果与分析">测试结果与分析</h3>
+<p>在<a href="#archtecture" data-reference-type="ref" data-reference="archtecture">3.5.5</a>节，本文介绍了SingleOut-Net的网络架构，由两个卷积模块构成编解码器结构。为了 便于区分，本文将其命名为模型一。为了分析这种编解码结构的网络性能， 本文分别从像素误差、模型复杂度和推断时间三个方面考察了 pixelCNN卷积模块对整个网络架构的影响。由于pixelCNN网络模块的输入和输出的尺寸保持不变， 所以将pixelCNN模块移去后，用一个<span class="math inline">1 × 1</span>的卷积将编码器模块输出的通道数变成网络最终输出的通道数。 将这种没有pixelCNN模块的网络架构命名为模型二。两个模型的性能比较如表<a href="#tab:performance" data-reference-type="ref" data-reference="tab:performance">[tab:performance]</a>所示。 从表中可以看出pixelCNN网络模块可以显著的降低像素误差(10倍下降)，但同时由于增加了网络的深度，使得网络在推断单张图片所消耗 的时间变长。</p>
+
+
+<p><span id="tab:performance" label="tab:performance">[tab:performance]</span></p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">网络模型</th>
+<th style="text-align: left;">像素误差</th>
+<th style="text-align: left;">模型大小</th>
+<th style="text-align: left;">推断时间</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">模型一</td>
+<td style="text-align: left;">0.00521%</td>
+<td style="text-align: left;">46.8Mb</td>
+<td style="text-align: left;">31ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">模型二</td>
+<td style="text-align: left;">0.00045%</td>
+<td style="text-align: left;">48.9Mb</td>
+<td style="text-align: left;">100ms</td>
+</tr>
+</tbody>
+</table>
+<h2 id="线虫轮廓的跟踪">线虫轮廓的跟踪</h2>
+<p>由于秀丽隐杆线虫通体透明，跟踪起来比较困难，本文采用了一种简单有效的跟踪策略。首先经过 线虫前景轮廓分割和线虫轮廓解析等步骤后，可以得到每一帧图像里所有线虫的轮廓。由 公式<a href="#eq:m" data-reference-type="ref" data-reference="eq:m">[eq:m]</a>和公式<a href="#eq:xy" data-reference-type="ref" data-reference="eq:xy">[eq:xy]</a>可以计算出轮廓的重心坐标。 <br /><span class="math display"><em>m</em><sub><em>j</em><em>i</em></sub> = ∑<sub><em>x</em>, <em>y</em></sub><em>I</em><sub><em>x</em>, <em>y</em></sub><em>x</em><sup><em>i</em></sup><em>y</em><sup><em>j</em></sup></span><br /> <br /><span class="math display">$$\vec{x}=\frac{m_{10}}{m_{00}},\quad \vec{y}=\frac{m_{01}}{m_{00}}\label{eq:xy}$$</span><br /> 假设当前帧有n个线虫轮廓，上一帧 图像有m个线虫轮廓，由每个轮廓的重心坐标可以计算出相邻两帧图像线虫轮廓重心之间的距离， 从而得到一个<span class="math inline"><em>n</em> × <em>m</em></span>的距离矩阵用公式<a href="#eq:matrix" data-reference-type="ref" data-reference="eq:matrix">[eq:matrix]</a> 表示。 <br /><span class="math display">$$D=\left[
+                \begin{matrix}
+                 d_{11}      &amp; d_{12}      &amp; \cdots &amp; d_{1m}      \\
+                 d_{21}      &amp; d_{22}      &amp; \cdots &amp; d_{2m}      \\
+                 \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+                 d_{n1}      &amp; d_{n2}      &amp; \cdots &amp; d_{nm}      \\
+                \end{matrix}
+                \right]\label{eq:matrix}$$</span><br /></p>
+
+<p><img src="figure/chap5/tracking.jpg" alt="image" style="width:9cm" /> <span id="fig:track" label="fig:track">[fig:track]</span></p>
+<p>矩阵中<span class="math inline"><em>d</em><sub><em>i</em><em>j</em></sub></span>表示当前帧图像中的第i个轮廓的重心到上一帧图像中第j个轮廓的重心之间的距离。通过 公式<a href="#eq:min" data-reference-type="ref" data-reference="eq:min">[eq:min]</a>可以得到相邻两帧图像中线虫轮廓之间的对应关系。即如果相邻两帧图像中两个 轮廓重心之间的距离最短，则可以认为是同一个线虫的轮廓。在线虫跟踪过程中，每个线虫用一个TrackID来标识， 不同的TrackID代表不同的线虫。 <br /><span class="math display"><em>i</em><em>n</em><em>d</em><em>e</em><em>x</em>(<em>i</em>) = arg min <sub><em>j</em></sub><em>d</em><sub><em>i</em><em>j</em></sub></span><br /> 但事实上由于线虫轮廓分割的不完整以及图像噪声的影响 ，这一策略往往会失效。因此，为了提高线虫轮廓跟踪的鲁棒性，在轮廓匹配的过程中本文增加了两个约束条件：</p>
+<ul>
+<li><p>相邻两帧图像中同一只线虫的轮廓面积的相对变化应该小于一个阈值。</p></li>
+<li><p>根据线虫运动的最大速度，同一只线虫在相邻两帧图像中轮廓重心的移动应该小于一个阈值。</p></li>
+</ul>
+<p>当这两个条件之一不满足时，则认为跟踪丢失，此时应该分配一个新的trackID给当前的轮廓。算法<a href="#algo:worm_track" data-reference-type="ref" data-reference="algo:worm_track">[algo:worm_track]</a> 是描述了线虫跟踪算法的实现思路。图<a href="#fig:track" data-reference-type="ref" data-reference="fig:track">[fig:track]</a>表示线虫跟踪的结果。</p>
+<p><span id="algo:initial_track" label="algo:initial_track">[algo:initial_track]</span></p>
+<p><span class="math inline"><em>W</em><em>o</em><em>r</em><em>m</em>_<em>d</em><em>a</em><em>t</em><em>a</em></span>双重列表，<span class="math inline"><em>W</em><em>o</em><em>r</em><em>m</em>_<em>d</em><em>a</em><em>t</em><em>a</em>[<em>i</em>][<em>j</em>]</span>表示第<span class="math inline"><em>i</em></span>帧图像中第<span class="math inline"><em>j</em></span>只线虫。 输出<span class="math inline"><em>t</em><em>r</em><em>a</em><em>c</em><em>k</em><em>I</em><em>D</em></span> <span class="math inline"><em>F</em><em>i</em><em>r</em><em>s</em><em>t</em><em>F</em><em>r</em><em>a</em><em>m</em><em>e</em>_<em>W</em><em>o</em><em>r</em><em>m</em><em>D</em><em>a</em><em>t</em><em>a</em> ← <em>W</em><em>o</em><em>r</em><em>m</em>_<em>d</em><em>a</em><em>t</em><em>a</em>[0]</span> <span class="math inline"><em>c</em><em>u</em><em>r</em>_<em>w</em><em>o</em><em>r</em><em>m</em> ← <em>F</em><em>i</em><em>r</em><em>s</em><em>t</em><em>F</em><em>r</em><em>a</em><em>m</em><em>e</em>_<em>W</em><em>o</em><em>r</em><em>m</em><em>D</em><em>a</em><em>t</em><em>a</em>[<em>i</em>]</span> <span class="math inline"><em>c</em><em>u</em><em>r</em>_<em>w</em><em>o</em><em>r</em><em>m</em>.<em>t</em><em>r</em><em>a</em><em>c</em><em>k</em><em>I</em><em>D</em> ← <em>G</em><em>e</em><em>t</em><em>N</em><em>e</em><em>w</em><em>T</em><em>r</em><em>a</em><em>c</em><em>k</em><em>I</em><em>D</em>()</span></p>
+<p><span id="algo:worm_track" label="algo:worm_track">[algo:worm_track]</span></p>
+<p><span class="math inline"><em>W</em><em>o</em><em>r</em><em>m</em>_<em>d</em><em>a</em><em>t</em><em>a</em></span>双重列表，<span class="math inline"><em>W</em><em>o</em><em>r</em><em>m</em>_<em>d</em><em>a</em><em>t</em><em>a</em>[<em>i</em>][<em>j</em>]</span>表示第<span class="math inline"><em>i</em></span>帧图像中第<span class="math inline"><em>j</em></span>只线虫。 输出<span class="math inline"><em>t</em><em>r</em><em>a</em><em>c</em><em>k</em><em>I</em><em>D</em></span> <span class="math inline"><em>I</em><em>n</em><em>i</em><em>t</em><em>i</em><em>a</em><em>t</em><em>e</em>_<em>t</em><em>r</em><em>a</em><em>c</em><em>k</em><em>i</em><em>n</em><em>g</em>(<em>W</em><em>o</em><em>r</em><em>m</em>_<em>d</em><em>a</em><em>t</em><em>a</em>)</span> <span class="math inline"><em>P</em><em>r</em><em>e</em><em>F</em><em>r</em><em>a</em><em>m</em><em>e</em>_<em>W</em><em>o</em><em>r</em><em>m</em><em>D</em><em>a</em><em>t</em><em>a</em> ← <em>W</em><em>o</em><em>r</em><em>m</em>_<em>D</em><em>a</em><em>t</em><em>a</em>[<em>f</em><em>r</em><em>a</em><em>m</em><em>e</em>_<em>i</em><em>n</em><em>d</em><em>e</em><em>x</em> − 1]</span></p>
+<p><span class="math inline"><em>c</em><em>u</em><em>r</em>_<em>w</em><em>o</em><em>r</em><em>m</em> ← <em>W</em><em>o</em><em>r</em><em>m</em>_<em>D</em><em>a</em><em>t</em><em>a</em>[<em>f</em><em>r</em><em>a</em><em>m</em><em>e</em>_<em>i</em><em>n</em><em>d</em><em>e</em><em>x</em>][<em>w</em><em>o</em><em>r</em><em>m</em>_<em>i</em><em>n</em><em>d</em><em>e</em><em>x</em>]</span> <span class="math inline"><em>d</em><em>i</em><em>s</em><em>t</em>_<em>a</em><em>r</em><em>r</em><em>a</em><em>y</em> ← <em>C</em><em>o</em><em>m</em><em>p</em><em>u</em><em>t</em><em>e</em>_<em>d</em><em>i</em><em>s</em><em>t</em><em>a</em><em>n</em><em>c</em><em>e</em>(<em>c</em><em>u</em><em>r</em>_<em>w</em><em>o</em><em>r</em><em>m</em>, <em>P</em><em>r</em><em>e</em><em>F</em><em>r</em><em>a</em><em>m</em><em>e</em>_<em>W</em><em>o</em><em>r</em><em>m</em><em>D</em><em>a</em><em>t</em><em>a</em>)</span> <span class="math inline"><em>m</em><em>i</em><em>n</em>_<em>i</em><em>n</em><em>d</em><em>e</em><em>x</em> ← <em>G</em><em>e</em><em>t</em>_<em>m</em><em>i</em><em>n</em>_<em>i</em><em>n</em><em>d</em><em>e</em><em>x</em>(<em>d</em><em>i</em><em>s</em><em>t</em>_<em>a</em><em>r</em><em>r</em><em>a</em><em>y</em>)</span> <span class="math inline"><em>N</em><em>e</em><em>a</em><em>r</em><em>e</em><em>s</em><em>t</em>_<em>w</em><em>o</em><em>r</em><em>m</em> ← <em>P</em><em>r</em><em>e</em><em>F</em><em>r</em><em>a</em><em>m</em><em>e</em>_<em>W</em><em>o</em><em>r</em><em>m</em><em>D</em><em>a</em><em>t</em><em>a</em>[<em>m</em><em>i</em><em>n</em>_<em>i</em><em>n</em><em>d</em><em>e</em><em>x</em>]</span> <span class="math inline"><em>c</em><em>u</em><em>r</em>_<em>w</em><em>o</em><em>r</em><em>m</em>.<em>t</em><em>r</em><em>a</em><em>c</em><em>k</em><em>I</em><em>D</em> ← <em>N</em><em>e</em><em>a</em><em>r</em><em>e</em><em>s</em><em>t</em>_<em>w</em><em>o</em><em>r</em><em>m</em>.<em>t</em><em>r</em><em>a</em><em>c</em><em>k</em><em>I</em><em>D</em></span> <span class="math inline"><em>c</em><em>u</em><em>r</em>_<em>w</em><em>o</em><em>r</em><em>m</em>.<em>t</em><em>r</em><em>a</em><em>c</em><em>k</em><em>I</em><em>D</em> ← <em>G</em><em>e</em><em>t</em><em>N</em><em>e</em><em>w</em><em>T</em><em>r</em><em>a</em><em>c</em><em>k</em><em>I</em><em>D</em>()</span></p>
+<h2 id="线虫的特征提取">线虫的特征提取</h2>
+<p>线虫从头部到尾部两边近似等距的分布着23-24块肌肉，其头部和尾部各占其总长度的<span class="math inline">1/6</span>。因此线虫 身体的自由度为24。当用轮廓来描述线虫的形态时，在其轮廓四周采样49个点足以描述线虫所有形态。 当对线虫进行特征计算时(如：计算线虫摆动频率和运动速度等)，通常是利用线虫轮廓中间的脊线进行计算。 因此需要提取线虫轮廓的中线然后采样24个点用于特征计算。下面将首先对线虫轮廓中间脊线提取算法进行介绍， 然后介绍线虫摆动频率的计算。</p>
+<h3 id="线虫轮廓中间脊线提取">线虫轮廓中间脊线提取</h3>
+<p>在得到线虫的轮廓后，将轮廓上的坐标按顺时针排列即可得到一个坐标点的循环列表。 将轮廓周长的<span class="math inline">1/48</span>作为一个单位边， 对于线虫轮廓边缘的任意一点而言，在其两边都可以找到一个距离为单位边长度的相邻点，这三点所成角的补角与该点的曲率成正比，因此 可以用于近似曲率的计算。由于其头部和尾部的曲率往往比身体的其他部分要尖锐，所以如果将像素索引作为横坐标， 曲率作为纵坐标，则这条曲线上将会出现两个波峰如图<a href="#fig:qulv" data-reference-type="ref" data-reference="fig:qulv">[fig:qulv]</a>所示，分别对应线虫的头部和尾部。 由此便可定位到线虫的头部和尾部，另外线虫的头部 曲率一般小于尾部的曲率，两个波峰中比较低的波峰对应的横坐标为线虫头部的坐标， 另一个波峰对应线虫尾部的坐标。 线虫头部和尾部将线虫轮廓分为两边。在其中一条边上找到所有距离另一条边最近的对应点。 两条边上两对应点的中点构成线虫的中间脊线，线虫轮廓中间脊线的长度定义为线虫的体长。</p>
+
+<p><img src="figure/chap5/cuvature.jpg" alt="image" style="width:14cm" /> <span id="fig:qulv" label="fig:qulv">[fig:qulv]</span></p>
+<h3 id="身体弯曲角度的计算以及摆动频率的估计">身体弯曲角度的计算以及摆动频率的估计</h3>
+<p>在很多毒理实验中，线虫的摆动频率经常作为一个重要的生理指标用于表征线虫的活跃程度<span class="citation" data-cites="Wang2008Assessment"></span>。 为了计算线虫的摆动频率， 我们定义一个衡量身体弯曲程度的夹角，由线虫头部、尾部和轮廓脊线的中点三点所成角定义为 身体弯曲角。线虫在爬行和游动的过程中，身体弯曲角会在<span class="math inline">180<sup>∘</sup></span>C左右振荡如图<a href="#fig:angle" data-reference-type="ref" data-reference="fig:angle">[fig:angle]</a>， 振荡的频率定义为线虫摆动的频率。在时刻<span class="math inline"><em>t</em><sub>0</sub></span>,对区间<span class="math inline">(<em>t</em><sub>0</sub> − <em>Δ</em><em>t</em>, <em>t</em><sub>0</sub> + <em>Δ</em><em>t</em>)</span>中弯曲角信号做FFT变换，假设其幅度最大值对应的横坐标 为n，则线虫在<span class="math inline"><em>t</em></span>时刻的瞬时摆动频率由公式<a href="#eq:freq" data-reference-type="ref" data-reference="eq:freq">[eq:freq]</a>得出。 <br /><span class="math display">$$\text{Swing frequency}=\frac{frame\_rate*n}{2*\Delta t} \label{eq:freq}$$</span><br /></p>
+
+<p><img src="figure/chap3/angle.jpg" alt="image" /> <span id="fig:angle" label="fig:angle">[fig:angle]</span></p>
+<h2 id="本章小结-1">本章小结</h2>
+<p>本章为药物筛选平台的软件部分，针对线虫药物筛选实验中的自动化视频分析和特征提取的需求。本文 提出了“前景轮廓分割——轮廓解析——轮廓跟踪——特征提取”的技术路线。并按照技术路线流程依次对各个 部分进行了详细的介绍，本章的主要工作如下：</p>
+<ol>
+<li><p>针对传统的图像分割方法在线虫前景轮廓分割任务中存在的不足(如：鲁棒性不足、分割效果 不理想、线虫轮廓不连续等问题)。本章提出了一种基于条件随机场模型的深度卷积分割算法。通过 实验对比分析，发现本章提出的分割算法能够显著改善线虫前景轮廓分割的效果，能够得到更加 连续的线虫轮廓，且与传统图像分割方法相比，该方法具有鲁棒性的优势。</p></li>
+<li><p>针对多线虫轮廓跟踪过程中多线虫轮廓相互纠缠导致无法辨识到单个线虫轮廓的问题。本章设计了 一个基于深度卷积的SingleOut-Net网络，通过生成的数据对其进行训练。并将两种网络架构 在网络性能、模型复杂度以及实时性三个方面进行了比较。实验结果显示本章提出的 轮廓解析方法能够有效的解析到单线虫的轮廓。</p></li>
+<li><p>基于线虫前景轮廓分割和轮廓解析的结果，提出了一种简单的基于最近邻匹配的 线虫轮廓跟踪算法。</p></li>
+<li><p>基于线虫轮廓跟踪的结果，介绍了线虫中间脊线的提取和线虫摆动频率的计算方法。</p></li>
+</ol>
+<h1 id="线虫的特征提取和急性氧化应激实验">线虫的特征提取和急性氧化应激实验</h1>
+<h2 id="引言-2">引言</h2>
+<h2 id="线虫的氧化急性应激实验">线虫的氧化急性应激实验</h2>
+<p>氧化应激（Oxidative Stress，OS）指生物体氧化与抗氧化作用的失衡，当生物体被内外环境中 存在有害化合物刺激时，其体内所产生的活性氮自由基和活性氧自由基将会导致细胞或者组织发生生理和 病理反应。过氧化氢（<span class="math inline"><em>H</em><sub>2</sub><em>O</em><sub>2</sub></span>）溶液作为一种强氧化剂经常被用于线虫的氧化应激实验中。本文 将野生型N2秀丽隐杆线虫的L1期幼虫作为研究对象，通过本文前面介绍的软硬件平台，研究不同线性 浓度梯度的双氧水溶液对L1期幼虫活性的影响。</p>
+<h3 id="线虫的同步化">线虫的同步化</h3>
+<p>为了得到处于同一发育阶段的幼虫需要对线虫进行同步化处理，首先用经过高压灭菌的M9缓冲液将NGM平板上 混合发育期的线虫冲洗到1.5ml的离心管中，离心后去掉上清液，加入碱裂解液(体积比为1：2的5N NaOH溶液和 5%NaClO溶液，现配)，当线虫全被腐蚀时，液体将变得清澈。再经过离心处理，去掉上层碱裂解液加入M9 缓冲液，离心洗涤1到2次。去掉上层缓冲液并用吸管将线虫卵接种到NGM平板上，至此便完成了同步化操作，等 线虫卵孵化便得到同步化的个体。</p>
+<h3 id="线性梯度稀释芯片的操作">线性梯度稀释芯片的操作</h3>
+<p>图<a href="#fig:sysdevice" data-reference-type="ref" data-reference="fig:sysdevice">[fig:sysdevice]</a>是实验硬件部分连接示意图，芯片上所有的阀门控制和进样控制均由Arduino单片机 通过uln2803集成芯片控制多路电磁阀实现。将含有L1期线虫的溶液离心去上清得到线虫浓缩液， 然后用移液枪加入0.25%的琼脂糖溶液作为线虫助悬剂。打开6号阀门， 采用压力进样的方式将线虫溶液从4号进样口打入第三列腔室。 打开4号阀门用压力进样的方式将水从3号进样口打入第二列腔室。 然后打开2号阀门用压力进样的方式将30mM的过氧化氢溶液从2号进样口打入第一列腔室。 然后关闭2号、4号和6号阀门，打开1号、3号、5号和7号阀门， 并在一号进样口施加一个周期性的气压。通过振荡的方式使前三列腔室中的液体充分混合。 最后通过进样口1将混合好的液体打入第四列腔室，根据芯片腔室的尺寸设计，可以计算出混合后各腔室的过氧化氢溶液的浓度从上至小依次为： 18mM、16mM、14mM、12mM、10mM、8mM、6mM、4mM、2mM。并用CCD相机每隔10分钟采集线虫在9个腔室中的运动视频。</p>
+
+<p><img src="figure/chap5/hardware.jpg" alt="image" style="width:12cm" /> <span id="fig:sysdevice" label="fig:sysdevice">[fig:sysdevice]</span></p>
+<h3 id="秀丽隐杆线虫急性氧化应激实验结果">秀丽隐杆线虫急性氧化应激实验结果</h3>
+<p>通过本文提出的线虫轮廓分割、解析、跟踪及特征提取算法对每个腔室的各个时刻的视频进行分析并提取摆动频率特征， 图<a href="#fig:res" data-reference-type="ref" data-reference="fig:res">[fig:res]</a>为了各腔室中线虫的平均摆动频率随时间的变化，可以看出随着过氧化氢溶液浓度的升高，线虫的摆动频率下降， 且在同一浓度下，线虫的摆动频率随着时间而下降。为验证芯片实验的准确性，我们也在96孔板上手动稀释形成上述浓度后， 通过对各个时间点线虫平均摆动频率的统计，实验结果表明96孔板实验和微流控芯片结果一致。但是相比96孔板实验， 我们的微流控芯片平台在试剂消耗、自动分析等上面都体现了较大的优势。</p>
+
+<p><img src="figure/chap5/res.jpg" alt="image" style="width:10cm" /> <span id="fig:res" label="fig:res">[fig:res]</span></p>
+<h2 id="本章小结-2">本章小结</h2>
+<h1 id="总结与展望">总结与展望</h1>
+<h2 id="工作总结">工作总结</h2>
+<p>目前环境中大量的化合物对人类的健康造成了很大的威胁，如何高效快速的评估这些化合物对人类 健康的影响是目前毒理学研究面临的一个巨大挑战。秀丽隐杆线虫作为一种重要的模式生物， 在现在毒理学测试发挥着重要作用。而传统的线虫实验通常在96孔板上完成，需要大量 的人工操作，不仅操作复杂而且通量低。另一方面，在实验过程中，通过人工观察的方式对线虫相关生理特征 (如：摆动频率、体长等)的统计，不仅效率低下，而且还会引入人为误差。这些都大大地限制了大规模 毒理实验的研究进展。本文的工作为基于秀丽隐杆线虫的毒理学测试 提供了一个集成微流控芯片和自动化视频特征提取的软硬件平台。本文的主要工作如下：</p>
+<ol>
+<li><p>设计了一款线性浓度梯度稀释的双层微流控芯片，并介绍了双层微流控芯片的制作工艺 (包括从芯片结构设计、芯片模具的制作到微流控芯片的制作)，通过染料和荧光实验验证了线性 梯度稀释芯片的合理性。</p></li>
+<li><p>线性梯度稀释芯片虽然在自动化片上梯度形成方面具有优势，但由于没有设计食物供应的通道， 因此并不适合线虫的长期培养观察，比较适合线虫的急性毒理实验。基于此，本文又设计了一款 单层侧向阀门的线虫培养芯片。侧向阀门的设计可以控制腔室中线虫的数量，食物可以通过网状结构 过滤后流向线虫腔室，为线虫提供食物，虫卵可以通过侧向的管道排出线虫培养腔室。从而可以对 同一代的线虫进行长期地培养观察。</p></li>
+<li><p>基于相机厂商提供的SDK，开发了一个高速的线虫视频采集程序。首先介绍了相机设备的操作流程， 详细分析了从图像采集到视频写入过程中的时间开销，并基于时间开销的分析结果，提出了一种多线程 的方法将图像采集和视频写入这两个任务并行。与单线程的视频采集相比，多线程的方式能够显著提高 视频采集的帧率。最后测试了不同采集分辨率对视频帧率的影响。</p></li>
+<li><p>针对线虫视频特征提取任务的特点，本文采用了“前景轮廓分割——轮廓解析 ——轮廓跟踪——特征提取”的技术路线。针对传统的图像处理方法在线虫前景轮廓分割任务中存在的不足 (如：鲁棒性不足、线虫轮廓出现断裂和依赖超参数的选择等)，本文提出了一种基于条件随机场的 深度卷积分割算法，通过与传统的图像分割方法相比，本文提出的前景分割算法显著地改善了线虫前景轮廓 分割的性能。</p></li>
+<li><p>针对多线虫轮廓跟踪过程中，多线虫轮廓相互纠缠导致无法区分单个线虫的轮廓， 从而导致线虫轮廓丢失的问题本。文提出了一种设计了一个基于深度卷积的SingleOut-Net网络，可以成功解析出单个 线虫的轮廓，并比较了不同的网络架构对网络性能、模型复杂度和实时性的影响。</p></li>
+<li><p>基于线虫轮廓跟踪的结果，本文提出了一种简单有效的线虫轮廓跟踪算法成功实现了对线虫的鲁棒跟踪。该方法 首先找出相邻两帧图像中所有线虫轮廓的重心，然后通过最近邻匹配的方式找出相邻两帧图像中线虫轮廓之间的对应关系， 从而实现对线虫轮廓的跟踪。</p></li>
+<li><p>基于线虫轮廓跟踪的结果，本文介绍了线虫轮廓中间脊线的提取方法，以及基于线虫的中间脊线进行线虫摆动 频率的计算。</p></li>
+</ol>
+<h2 id="展望">展望</h2>
+<p>本文的主要工作是为基于秀丽隐杆线虫的大规模毒理学测试和药物筛选搭建一个软硬件平台。</p>
+
+
+
+<section class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="http://tox21.org/" class="uri">http://tox21.org/</a><a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn2"><p><a href="https://github.com/wkentaro/labelme" class="uri">https://github.com/wkentaro/labelme</a><a href="#fnref2" class="footnote-back">↩</a></p></li>
+<li id="fn3"><p><a href="https://is-innovation.eu/ratsnake/" class="uri">https://is-innovation.eu/ratsnake/</a><a href="#fnref3" class="footnote-back">↩</a></p></li>
+</ol>
+</section>
