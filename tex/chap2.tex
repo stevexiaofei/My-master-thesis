@@ -1,10 +1,10 @@
 \chapter{微流控线虫芯片的设计及硬件平台的搭建}
 \section{引言}
-	在传统的药物筛选过程中，通过人工的方式在96孔板上配置不同浓度的化合物。
+	在传统的线虫毒理实验过程中，通过人工的方式在96孔板上配置不同浓度的化合物。
 	然后将线虫暴露在不同浓度的化合物下，观察并记录线虫在不同浓度化合物下
 	的变化。这种人工操作的方式不仅存在样品消耗大、通量低和操作繁琐等缺点， 
 	而且也不利于观察。本章设计了两款微流控芯片分别用于线虫的急性毒性实验
-	和对线虫进行长期的培养观察。为了实现对这两款芯片的进样控制和阀门控制，
+	和需要对线虫长期培养的慢性毒性实验。为了实现对这两款芯片的进样控制和阀门控制，
 	本课题组开发了自动化阀门控制系统。同时开发了一个高速的视频采集程序，
 	为后续的线虫特征提取提供了视频数据。
 \section{实验材料与仪器}
@@ -26,37 +26,43 @@
 		SMZ-168型体式显微镜& 中国麦克奥迪公司 \\
 		NMC反应离子式深硅刻蚀系统 & 北京北方微电子公司\\
 		IX71型倒置荧光显微镜 & 日本Olympus公司\\
+		DP73型CCD & 日本Olympus公司\\
 	\bottomrule
 	\end{tabular}
 	\end{table}	
-\section{双层线虫梯度芯片的设计及制作}
-\subsection{线虫梯度芯片的设计}
+\section{用于线虫急性毒理实验的梯度稀释芯片设计及制作}
+\subsection{用于线虫急性毒理实验的梯度稀释芯片设计}
 \label{arch-design}
-本文首先设计了一款用于急性毒理实验的双层微流控芯片。
-通过微纳加工工艺使第一列腔室的长度线性递减，而第二列腔室的长度线性增加，
-且两列腔室的总长度保持不变。因此将每一排前两个腔室中的液体相互混合即可形成线性比例稀释的混合
-溶液。但在微流控芯片中，流体的雷诺系数Re 变得很小，流体以层流的方法流动，
-这使得微管道中不同液体的混合变得非常缓慢。本文中，
-该芯片不同液体的混合使用了本课题组提出的只需一个压力源的基于流体振荡的混合方式\cite{cheng2018simple}。
-振荡的时候需要在管道的一端构造一个封闭的空腔环境。
-当需要混合前两列腔室中的液体时，需要将第三列作为储气腔，
-将第三列腔室右边的阀门关闭即可形成封闭的储气腔。
-当需要混合前三列腔室中的液体时可以将第四列腔室作为储气腔。
+本文首先设计了一款用于急性毒理实验的双层微流控芯片，用于快速形成化合物梯度浓度，
+并与线虫进行反应，以观察不同化合物浓度对线虫生长发育的影响。
+其制作工艺采用了基于Quake的双层阀门工艺，Quake阀门原理如图\ref{fig:chap2:path}所示，
+当向阀门层施加一定的气压时，PDMS模会在气压的作用下被顶起从而压迫上层的流道，使
+流道关闭，下层的阀门层起到了阀门的作用。
+	\begin{figure}[htbp]
+	  \centering
+	  \includegraphics[width=10cm]{figure/chap2/path.jpg}
+	  \bicaption
+		{Quake阀门原理示意图}
+		{Schematic diagram of Quake valve}
+	  \label{fig:chap2:path}
+	\end{figure}
 \begin{figure}[htbp]
 	  \centering
-	  \includegraphics[width=13cm]{figure/chap2/chip-arch.jpg}
+	  \includegraphics[width=13cm]{figure/chap2/chip-arch.png}
 	  \bicaption
 		{线性梯度稀释芯片结构}
 		{Structure of Linear gradient dilution chip}
 	  \label{fig:chap2:chip-arch}
 	\end{figure}
 	
-线虫梯度芯片的设计如图\ref{fig:chap2:chip-arch}所示，由两层PDMS管道组成。上层为流道层，下层为阀门层。
-芯片包含八个阀门和四个进样口。阀门分别控制每列之间的隔绝和开启以及每列腔室之间的相互隔绝和开启。
-其中3、5、7号阀门控制4列每列之间的隔绝，而2、4、6号阀门分别控制1、2、3列里9排腔室之间的隔绝，8个阀门将整个芯片分为$9\times4$个独立的腔室。
-4列腔室中第一列腔室的长度依次线性递减，第二列腔室的长度依次线性增加，前两列腔室的长度总和为2mm (两腔室长度的比例从上到下依次为$9:1,8:2,\dots,1:9$)。
-第三列和第四列腔室的长度保持恒定分别为1mm和3mm。所有腔室的宽度和高度分别
-为200$\mu$m和80$\mu$m。
+图\ref{fig:chap2:chip-arch}为线性梯度稀释芯片的结构示意图，
+该芯片由两层PDMS组成，上层为流道层，下层为阀门层。
+片上有4个进样口、4个出样口和8个排阀。8个排阀控制每列之间的隔绝和连通以及
+每列9个腔室之间的隔绝和连通。
+4列腔室之间的隔绝与连通由3、5、7号排阀控制，而2、4、6号排阀分别控制1、2、3列里
+9个腔室之间的隔绝与连通，整个梯度稀释芯片由8个排阀分成$9\times4$个独立的腔室。
+4列腔室中第一列9个腔室的长度依次线性递减，第二列9个腔室的长度依次线性增加，前两列腔室的长度总和为2mm (两腔室长度的比例从上到下依次为$9:1,8:2,\dots,1:9$)。
+第三列和第四列腔室的长度保持恒定分别为1mm和3mm。所有腔室的宽度和高度分别为200$\mu$m和80$\mu$m。
 
 \subsection{芯片模具加工工艺}
 \subsubsection{阀门层模具制作}
@@ -80,14 +86,15 @@
 	\item 将硅片放入烘箱中，逐渐升温至$50^\circ C$，30分钟后再将温度升高至$90^\circ C$，90分钟后再将其取出。
 	\item 经过紫外曝光后再显影。
 	\item 将硅片放在热板上分别升高温度分别在$65^\circ C$、$95^\circ C$、$120^\circ C$和$190^\circ C$分别停留
-	5min、5min、40min和60min。
+	5min、5min、40min和60min。这个步骤是正胶回流使管道的截面形成弧形结构，
+		而弧形结构才能保证阀门层施加压力时候完全截断管道。
 	\item 旋涂负胶SU-8 3050并用500rpm的转速预转8秒，然后再用1500rpm的转速旋涂30秒得到80um厚的胶。
 	\item 将硅片放在$95^\circ C$的烘箱中恒温40min。
 	\item 经紫外曝光后将硅片放入$95^\circ C$的烘箱中恒温60min。
 	\item 用对应的显影液对硅片显影，并用异丙酮溶液漂洗，以除去残留的显影液和试剂残留并用氮气将硅片吹干。
 	\item 为了除去水汽，将硅片放入$80^\circ C$的烘箱中恒温60min，再用甲基硅氧烷处理5min。
 	\end{enumerate}
-\subsection{线虫梯度芯片的制作}
+\subsection{双层微流控芯片的制作}
 	制作好芯片模具后，就可以利用芯片模具进行微流控芯片的制作，下面将介绍双层微流控芯片的制作流程。经过以下流程
 	最终完成的芯片其实物图如图\ref{fig:chap2:chip-fabric}所示，为了更好地显示芯片结构，芯片的四列腔室
 	都被打入不同颜色的染料。
@@ -116,20 +123,41 @@
 	  \label{fig:chap2:chip-fabric}
 	\end{figure}
 \subsection{染料与荧光实验}
-为验证振荡混合效果，我们使用染料及荧光进行验证。如图\ref{fig:before}所示，将第一列腔室打入红色染料，
-第二列腔室打入水，将第三列腔室作为振荡腔。在1号进样口施加一个周期为250ms压力值为0.05Mpa的气压，
-经过7分钟的振荡，染料已经充分的混合均匀。染料和水完全混合后的效果如图\ref{fig:after}所示，从上到下染料的颜色依次变淡。
-如不加振荡，两列液体以自由扩散方式混合，需要2～3个小时，可以看出，振荡方法对快速混合形成梯度有较好的效果，
-大大加快了不同液体的混合速率。
-为了定量的验证梯度形成的准确性，我们将第一列腔室中的染料替代为浓度为0.1g/L 的荧光素钠溶液(pH=7)，
-最终得到0.01～0.09g/L的线性浓度梯度。图\ref{fig:chap2:fluence}为荧光素钠浓度与荧光强度之间的关系。
-图中蓝色的线表示线性拟合的结果，可以看出拟合结果的线性度较好。
-从而验证了基于微振荡原理的大规模梯度稀释是可行的，
-这种方式能够显著加快混合的速度并且只需要一个压力源即可完成振荡混合。
-为了验证这种振荡对线虫并无不良后果，我们将线虫打入第三列腔室，并在该参数下振荡，
-观察2个小时发现线虫的摆动频率与没有经过振荡的线虫相比没有明显差异。
+	梯度稀释是生物化学领域常用的技术，在微流控芯片上研究梯度形成的研究也较多，
+	如经典的“圣诞树”结构\cite{Dertinger2001Generation,Jeon2000Generation}，
+	但其存在样品消耗大以及需要精确的流阻设计和流速调节等问题。
+	本文提出一种基于振荡原理的集成高通量阀门的梯度芯片结构，可以快速形成多个浓度梯度。
+	芯片管道中不同液体的混合使用了本课题组提出的只需一个压力源的基于流体振荡的混合方式\cite{cheng2018simple}。
+	振荡的时候需要在管道的一端构造一个封闭的空腔环境。
+	当需要将前两列腔室中的液体混合时，可以将第三列腔室作为储气腔，
+	将7号排阀关闭即可形成封闭的储气腔；
+	当需要将前三列腔室中的液体混合时，可以将第四列腔室作为储气腔。
 
-	\begin{figure}[!htp]
+	为观察振荡混合的效果以及验证梯度形成的准确性，
+	本文使用了红色染料及荧光试剂对芯片进行测试。如图\ref{fig:before}所示，
+	分别向第一列腔室和第二列腔室中打入红色染料和水，将腔室中的空气全部排出
+	，使液体充满整个腔室。
+	将第三列腔室作为振荡腔，在1号进样口施加一个周期为250ms压力值为0.05Mpa的气压，
+	经过7分钟的振荡，染料和水完全混合后的效果如图\ref{fig:after}所示。
+	从图中可以看出红色染料已经充分混合均匀，且从最上面的腔室到最下面的腔室
+	红色染料的颜色依次变淡。
+	在不加振荡的情况下，两列腔室中的液体以自由扩散方式完成以上混合
+	需要2～3个小时。可以看出，基于振荡的混合方式对快速形成浓度梯度有较好的效果，
+	能够显著加快不同液体的混合速率。
+	
+	为了验证梯度形成的准确性，本文将100$\mu$M的异硫氰酸荧光素(FITC)作为待稀释样品打入第一列腔室，
+	将磷酸缓冲液(PBS)作为稀释剂打入第二列腔室，在相同的振荡参数下完成振荡混合，
+	最终得到$10\mu M,20\mu M,\cdots,90\mu M$的线性浓度梯度。使用奥林巴斯荧光倒置显微镜(IX-73)和
+	DP73型CCD拍摄每个腔室中的荧光染料图像，用Image J图像处理软件将图像转成8位灰度图
+	并读取光强。图\ref{fig:chap2:fluence}为各个腔室中FITC浓度与荧光强度之间的关系，
+	图中蓝色的线表示线性拟合的结果，可以看出拟合结果的线性度较好。
+	为了验证线虫经过振荡混合后不会留下不良后果，
+	本文将线虫溶液打入第三列腔室，并在以上振荡参数下完成振荡，
+	观察2个小时发现线虫的摆动频率与没有经过振荡的线虫相比没有明显差异。通过以上实验证明了
+	梯度稀释芯片设计的合理性，该芯片可以在较短的时间内形成准确的浓度梯度，
+	可以用于研究线性浓度梯度的化合物对秀丽隐杆线虫的影响。
+
+	\begin{figure}[!thp]
 	\centering
 	  \begin{subfigure}{0.45\textwidth}
 		\centering
@@ -144,7 +172,8 @@
 		\caption{振荡结束后的芯片图}
 		\label{fig:after}
 	  \end{subfigure}
-	  \bicaption{染料实验结果}{Dye experiment results}
+	  \bicaption{振荡前后各个腔室染料颜色的变化}
+	  {Color change of dyes in each chamber before and after oscillation}
 	  \label{fig:oscillation}
 	\end{figure}
 
@@ -152,26 +181,14 @@
 	  \centering
 	  \includegraphics[width=11cm]{figure/chap2/fluence.jpg}
 	  \bicaption
-		{荧光实验结果}
-		{Fluorescence experiment results}
+		{各腔室不同浓度FITC溶液荧光强度变化}
+		{Fluorescence intensity changes with different concentrations of FITC solution in each chamber}
 	  \label{fig:chap2:fluence}
 	\end{figure}
-\section{单层侧向阀门线虫培养芯片的设计及制作}
-\subsection{单层阀门线虫培养芯片的设计}
-    如图\ref{fig:chap2:singlelayer}所示是单层侧向阀门线虫培养芯片的设计图。
-	图中可以看出芯片可以分成三个部分，本文
-	分别用三种不同的颜色表示。最里面的表示线虫的培养腔室。
-	由于腔室的面积比较大且PDMS是柔性材料，
-	为了防止腔室塌陷，腔室里放置了很多微柱，
-	两边分别表示线虫的进样口和出样口。中间是本文设计的侧向
-	阀门，通过对阀门施加气压可以控制线虫培养腔室两端通道宽度的大小。这种侧向阀门的设计可以控制腔室中
-	线虫的进入和排出，相当于一个夹子的作用，从而可以控制腔室中线虫的数量。
-	最外层的设计为线虫提供食物和虫卵的排出。右边为食物的
-	入口，其中的网状结构可以过滤掉食物中的小碎片。虫卵会通过线虫腔室的侧向通道被排出，
-	从而可以防止不同代的
-	线虫出现在同一个腔室，可以针对同一代的线虫进行实验观察。
+\section{用于线虫长期培养的慢性毒理芯片的设计及制作}
+\subsection{用于线虫长期培养的慢性毒理芯片设计}
 \label{subsec:chipdesign}
-	\begin{figure}[htbp]
+	\begin{figure}[!b]
 	  \centering
 	  \includegraphics[width=14cm]{figure/chap2/arch-chip.png}
 	  \bicaption
@@ -179,6 +196,22 @@
 		{Single layer lateral valve chip for  worm culture}
 	  \label{fig:chap2:singlelayer}
 	\end{figure}
+	本文在\ref{arch-design}小节设计的用于急性毒理实验的双层芯片制作工艺较复杂，且没有设计食物
+	供应的通道，不适合应用在需要对线虫进行长期培养观察的慢性毒性实验中。
+	本小节将介绍另一种带侧向阀门的单层毒理芯片，该芯片不仅制作工艺简单而且还可用于线虫的长期培养，
+    如图\ref{fig:chap2:singlelayer}所示是带侧向阀门的单层毒理芯片设计图。
+	图中可以看出芯片可以分成三个部分，本文
+	分别用三种不同的颜色表示。中间黄色的区域为线虫培养腔室。
+	由于腔室的面积比较大且PDMS是柔性材料，
+	为了防止腔室塌陷，腔室里放置了微柱，图中线虫入口和线虫出口分别表示线虫的进样口和出样口
+	。红色管道为本文设计的侧向
+	阀门，通过对阀门施加气压可以控制线虫培养腔室两端通道宽度的大小。这种侧向阀门的设计可以控制腔室中
+	线虫的进入和排出，相当于一个夹子的作用，从而可以控制腔室中线虫的数量。
+	最外层的设计为线虫提供食物和虫卵的排出。右边为食物的
+	入口，其中的网状结构可以过滤掉食物中的小碎片。虫卵会通过线虫腔室的侧向通道被排出，
+	从而可以防止不同代的
+	线虫出现在同一个腔室，可以针对同一代的线虫进行实验观察。
+
 \subsection{单层阀门芯片模具的制作}
 	下面开始介绍单层阀门芯片模具的制作工艺流程。
 	\begin{enumerate}[label={(\arabic*)},font={\color{black!50!black}\bfseries}]
@@ -201,6 +234,14 @@
 	\item 为了使PDMS芯片的制作过程中，PDMS层容易从模具上揭下来，需要对硅片表面进行硅烷化处理。
 	将硅片放入一次性的培养皿中，在硅片旁的滤纸上滴一滴硅烷化试剂，通过蒸发沉淀的方式完成硅烷化处理。
 	\end{enumerate}
+		\begin{figure}[!tbp]
+	  \centering
+	  \includegraphics[width=12cm]{figure/chap2/fabric-chip2.jpg}
+	  \bicaption
+		{单层侧向阀门线虫培养芯片实物图}
+		{Fabricated single layer lateral valve chip for worm culture}
+	  \label{fig:chap2:fabricsinglelayer}
+	\end{figure}
 \subsection{单层阀门芯片的制作}
 	将 PDMS 浇筑在芯片的模具上待其固化，即可完成单层侧向阀门芯片的制作，
   通过以下工艺流程最终制作完成的芯片如图\ref{fig:chap2:fabricsinglelayer}所示。
@@ -216,15 +257,16 @@
 	\item 将芯片和干净的玻璃片一起放入氧等离子体去胶机中处理40 秒后，将芯
 片和玻璃贴合在一起并放入$80^\circ C$的烘箱中恒温2小时，加强键合效果。
 	\end{enumerate}
-	\begin{figure}[htbp]
-	  \centering
-	  \includegraphics[width=12cm]{figure/chap2/fabric-chip1.jpg}
-	  \bicaption
-		{单层侧向阀门线虫培养芯片实物图}
-		{Fabricated single layer lateral valve chip for worm culture}
-	  \label{fig:chap2:fabricsinglelayer}
-	\end{figure}
-	\begin{figure}[!htp]
+\subsection{慢性毒理芯片的侧向阀门测试}
+	为了测试侧向阀门的设计可以控制腔室两端管道的宽度，
+	本文测试了不同压力下管道宽度的变化。为了便于视觉
+	观察，我们向阀门通道注入了红色的染料。
+	图\ref{fig:chap1:width}表示向阀门施加不同压力的情况下腔室两端通道的
+	宽度变化。从图中可以看出在0.3Mpa的压力下，通道的宽度明显变窄了。
+	该测试结果表明这种侧向阀门的设计可以改变通道的宽度，
+	通过控制腔室两端通道的宽度可以控制
+	线虫的进入或排出。
+		\begin{figure}[!htp]
 	  \centering
 	  \begin{subfigure}{0.45\textwidth}
 		\centering
@@ -242,26 +284,11 @@
 	  \bicaption{不同压力下通道宽度的变换}{Transform of channel width under different pressure}
 	  \label{fig:chap1:width}
 	\end{figure}
-\subsection{单层侧向阀门线虫固定芯片的测试}
-	为了测试侧向阀门的设计可以控制腔室两端管道的宽度，本文对测试了不同压力下管道宽度的变化。为了便于视觉
-	观察，我们向阀门通道注入了红色的染料。图\ref{fig:chap1:width}表示向阀门施加不同压力的情况下腔室两端通道的
-	宽度变化。从图中可以看出在0.3Mpa的压力下，通道的宽度明显变窄了。说明这种侧向阀门的设计可以改变通道的宽度。
-	
-	
-\section{阀门控制系统搭建}
-	目前，双层的微流控芯片一般由下层的阀门层和上层的流道层组成。阀门层的PDMS薄膜通常很薄，当向气阀通道施加一定的
-	气压(大约30psig)，阀门层的薄膜会向上顶起。由于上层的流道和下层的气阀通道是上下交叉的，通过控制向气阀通道施加
-	气压，便可以控制上层流道的通断。另一方面，线虫的压力进样和芯片的振荡都需要对进样口进行气压控制。基于以上需求
-	，本课题组开发了自动化阀门控制系统，图\ref{fig:flow_chart}为该系统的连接示意图。整个系统由五个模块构成，
-	我们采用了750W-18L小型空压机作为气泵模块为整个系统提供气压输出，将Arduino作为微控制器控制电磁阀的输出。
-	Arduino由运行在电脑上的上位机程序控制。通过该系统可以实现对线虫微流控芯片阀门和进样的控制。
-	图\ref{fig:chap2:valve}为多路阀门控制仪器的实物图。
-
 	\begin{figure}[!htp]
     \centering
     \begin{tikzpicture}[node distance=2.5cm,auto]
 	\tikzstyle{process} = [rectangle,rounded corners,thick,minimum width = 3cm,text width=3cm,inner sep=2pt,minimum height =1.7cm, text centered, draw = black]
-    \node (pc) [process] {电脑};
+    \node (pc) [process] {手机/平板};
     \node (mcu) [process, below of=pc] {微控制器及运算放大器};
     \node (valves) [process, below of=mcu] {电磁阀};
     \node (pump) [process, right of=valves,node distance=4cm] {气泵};
@@ -275,13 +302,30 @@
     \bicaption{自动化阀门控制系统}{Automated valve control system}
     \label{fig:flow_chart}
 	\end{figure}
-	\begin{figure}[htbp]
+\section{阀门控制系统搭建}
+	目前，双层的微流控芯片一般由下层的阀门层和上层的流道层组成。阀门层的PDMS薄膜通常很薄，当向气阀通道施加一定的
+	气压(大约30psig)，阀门层的薄膜会向上顶起。由于上层的流道和下层的气阀通道是上下交叉的，通过控制向气阀通道施加
+	气压，便可以控制上层流道的通断。另一方面，线虫的压力进样和芯片的振荡都需要对进样口进行气压控制。基于以上需求
+	，本课题组开发了自动化阀门控制系统，图\ref{fig:flow_chart}为该系统的连接示意图。整个系统由五个模块构成，
+	我们采用了750W-18L小型空压机作为气泵模块为整个系统提供气压输出，将Arduino作为微控制器控制电磁阀的输出。
+	Arduino由运行在手机/平板上的上位机程序控制。通过该系统可以实现对线虫微流控芯片阀门和进样的控制。
+	图\ref{fig:chap2:valve}为多路阀门控制仪器的实物图，图\ref{fig:chap2:controlpanel}
+	为多路阀门控制仪器的控制界面。
+	\begin{figure}[!ht]
 	  \centering
-	  \includegraphics[width=14cm]{figure/chap2/controlsys.jpg}
+	  \includegraphics[width=10cm]{figure/chap2/controlsys.jpg}
 	  \bicaption
-		{多路阀门控制仪器}
-		{Valve control equipment}
+		{多路阀门控制仪器}%和电脑控制仪器界面and user interface of the control instrument on the computer
+		{Valve control equipment }
 	  \label{fig:chap2:valve}
+	\end{figure}
+	\begin{figure}[!ht]
+	  \centering
+	  \includegraphics[width=10cm]{figure/chap2/controlpanel.jpg}
+	  \bicaption
+		{手机/平板控制仪器界面}%和电脑控制仪器界面and user interface of the control instrument on the computer
+		{User interface of the control instrument on phone or pad }
+	  \label{fig:chap2:controlpanel}
 	\end{figure}
 \section{高速视频采集程序的设计}
 	线虫视频的高速采集对线虫摆动频率的估计是至关重要的一步。根据采样定理，采集的视频帧率至少是线虫摆动频率的两倍。
@@ -301,7 +345,7 @@
 	图像数据的格式需要在相机初始后设置。本文将相机的帧格式设置为彩色RGB模式，
 	图像像素在内存中按照从左到右从上到下的方式连续存储。且每一个像素有RGB
 	三个颜色通道，每个颜色通道都用一个字节存储。为了将图像数据转化为numpy数组，
-	方便python访问。本文使用 C 函数库中的 memcpy 内存拷贝函数将内存中的图像
+	方便python访问，本文使用 C 函数库中的 memcpy 内存拷贝函数将内存中的图像
 	数据拷贝到numpy 数组指针指向的内存。然后再用 VideoWrite 将numpy 数组写入硬盘
 	，至此便完成一帧图像的写入。
 	
@@ -334,8 +378,9 @@
 	\end{tabular}
 	\end{table}
 \section{本章小结}
-	本章的主要工作为药物筛选平台的硬件部分。首先，介绍了两款线虫微流控芯片的设计，
-	这两款芯片分别是用于急性毒性实验的线性梯度稀释芯片和带侧向阀门的线虫培养芯片。
+	本章的主要工作为毒理测试平台的硬件部分。首先，介绍了两款线虫毒理芯片的设计，
+	这两款芯片分别是用于急性毒性实验的线性梯度稀释芯片和用于慢性毒性实验
+	带侧向阀门的线虫芯片。
 	并针对这两款芯片介绍了双层芯片和单层芯片的制作工艺(包括芯片模具的制作和微流控
 	芯片的制作等流程)。通过实验验证了这两款芯片设计的合理性。针对线虫实验中需要对
 	阀门和进样进行控制的需求，本文介绍了阀门控制系统的搭建。为了采集实验过程中的线

@@ -117,9 +117,15 @@
 	\begin{figure}[h]
 	  \centering
 	  \includegraphics[width=12cm]{figure/chap1/wormculture.jpg}
-	  \bicaption
-		{线虫培养芯片}
-		{Microfluidic chips for worm culture}
+	  \bicaption[线虫培养芯片]
+		{线虫培养芯片
+		(a) CD状的线虫培养芯片\cite{Kim2007Automated}
+		(b) 具有16个平行腔室的线虫培养芯片\cite{Hulme2010Lifespan}
+		(c) 具有固定与成像功能的线虫培养芯片\cite{Krajniak2010Long}}
+		{Microfluidic chips for worm culture
+		(a) CD-shaped worm culture chip\cite{Kim2007Automated}
+		(b) Worm culture chip with 16 parallel chambers\cite{Hulme2010Lifespan}
+		(c) Worm culture chip with immobilization and imaging function\cite{Krajniak2010Long}}
 	  \label{fig:cd}
 	\end{figure}
 	
@@ -153,13 +159,24 @@
 	\begin{figure}[t]
 	  \centering
 	  \includegraphics[width=12cm]{figure/chap1/immobilization.jpg}
-	  \bicaption
-		{线虫固定芯片}
-		{Microfluidic chips for worm immobilization}
+	  \bicaption[线虫固定芯片]
+		{线虫固定芯片
+		(a) 通过二氧化碳气流或机械挤压方式固定线虫的芯片\cite{Chokshi2009CO2}
+		(b) 通过低温固定线虫的芯片\cite{saberi2018microfluidic}
+		(c) 通过FP127 凝胶液滴固定幼虫的芯片\cite{Aubry2015Hydrogel}
+		(d) 固定线虫胚胎并对其成像的线虫芯片\cite{Cornaglia2015An}
+		}
+		{Microfluidic chips for worm immobilization
+		(a) Immobilization chip working by $CO_2$ flow or mechanical extrusion\cite{Chokshi2009CO2}
+		(b) Immobilization chip working by low temperature\cite{saberi2018microfluidic}
+		(c) Chip for larvae immobilization by FP127 gel droplets\cite{Aubry2015Hydrogel}
+		(d) Worm chip for immobilizing and imaging C.elegans embryos\cite{Cornaglia2015An}
+		}
 	  \label{fig:immobilization}
 	\end{figure}
 	
-	以上的方法虽然能够对成虫进行固定，但由于幼虫的尺寸比成虫小且L1期的幼虫很容易
+	以上的方法虽然能够对成虫进行固定，但由于幼虫的尺寸比成虫小且L1期的幼虫运动能力更强，
+	针对幼虫的固定芯片不仅由于器件尺寸较小导致加工难度较大，而且使用中很容易
 	将微通道阻塞，因此幼虫的固定是个难点。Aubry等人\cite{Aubry2015Hydrogel}运用FP127凝胶液滴将L1的幼虫包裹，
 	其芯片结构如图\ref{fig:immobilization}c所示。当液滴进入到存储单元
 	时可以调整温度从而固定线虫，成功实现对L1期幼虫的操纵及成像。为了研究线虫胚胎发育及其分子机制，Cornaglia
@@ -175,9 +192,18 @@
 	\begin{figure}[t]
 	  \centering
 	  \includegraphics[width=12cm]{figure/chap1/sorting.jpg}
-	  \bicaption
-		{线虫分选芯片}
-		{Microfluidic chips for worm sorting}
+	  \bicaption[线虫分选芯片]
+		{线虫分选芯片
+		(a) 基于趋电性的线虫分选芯片\cite{wang2015highly}
+		(b) 集成光纤检测和层流开关的线虫分选系统\cite{yan2014continuous}
+		(c) 具有线虫同步化功能的螺旋状芯片\cite{sofela2018high}
+		}
+		{Microfluidic chips for worm sorting
+		(a) Worm sorting chip based on electrotaxis\cite{wang2015highly}
+		(b) Worm sorting system with integrated optical fiber detection 
+			and laminar flow switching\cite{yan2014continuous}
+		(c) Spiral chip with worm synchronization\cite{sofela2018high}
+		}
 	  \label{fig:sorting}
 	\end{figure}
 	线虫的筛选也是目前研究的热点。如对不同发育时期、不同大小的线虫进行筛选。
@@ -205,12 +231,20 @@
 
 \subsection{药物筛选与毒理实验}
 \label{sec:intro:analog}
-	\begin{figure}[b]
+	\begin{figure}[!h]
 	  \centering
 	  \includegraphics[width=12cm]{figure/chap1/screen.jpg}
-	  \bicaption
-		{药物筛选线虫芯片}
-		{worm chips for drug screening}
+	  \bicaption[药物筛选线虫芯片]
+		{药物筛选线虫芯片
+		(a) 具有48个平行阵列腔室的线虫芯片\cite{Chung2011Microfluidic}
+		(b) 具有4个浓度梯度生成器的线虫芯片\cite{Yang2013An}
+		(c) 具有30 个线虫培养腔室的环状芯片\cite{zhuliguo2016}
+		}
+		{Worm chips for drug screening
+		(a) Worm chip with 48 parallel array chambers\cite{Chung2011Microfluidic}
+		(b) Worm chip with 4 concentration gradient generators\cite{Yang2013An}
+		(c) Ring chip with 30 worm culture chambers\cite{zhuliguo2016}
+		}
 	  \label{fig:screening}
 	\end{figure}
 	线虫作为一种重要的模式生物与人类的疾病基因具有约65\%的相似性\cite{Baumeister2002The,Sonnhammer1997Analysis}，
@@ -283,10 +317,11 @@
 
 \section{研究内容}
 \label{sec:intro:org}
-	本文主要研究微流控芯片和机器视觉在基于线虫的药物筛选和毒理测试研究方面的应用，本文的主要
+	本文主要研究微流控芯片和机器视觉在基于线虫的毒理测试研究方面的应用，本文的主要
 	工作如下：
 	\begin{enumerate}
-	  \item 本文首先设计了两款微流控芯片分别用于线虫的急性毒理实验和线虫的进样控制及长期培养，
+	  \item 本文首先设计了两款微流控芯片分别用于线虫的急性毒理实验和线虫的
+	  慢性毒理实验，
 	  并介绍了两款芯片的制作工艺流程。针对实验过程中需要阀门控制和进样控制的需要，
 	  介绍了阀门控制系统的搭建。为了采集在给药的过程中线虫的视频以供后续线虫特征提取，
 	  本文开发了一个高速的视频采集程序。
@@ -299,13 +334,13 @@
 	  性能，在像素分类误差指标上达到了0.11\%的分割精度。
 	  \item 针对多线虫跟踪情况下会出现线虫轮廓相互纠缠导致跟踪丢失的问题，本文提出了一种基于深度卷积网络
 	  的网络架构。结果显示，这种方法可以有效地解析出线虫相互纠缠时单个线虫的轮廓。
-	  \item 为了展示本文提出的软硬件平台在药物筛选和毒理测试方面的应用优势，
+	  \item 为了展示本文提出的软硬件平台在毒理测试方面的应用优势，
 	  运用该平台，本文研究了线性浓度梯度的双氧水对秀丽隐杆线虫
 	  活性的影响，并将摆动频率作为主要的监测特征。
 	\end{enumerate}
 	
 \section{论文章节安排}
-	本文主要针对高通量药物筛选和毒理测试方面的应用，提出了一种基于微流控芯片的集成片上
+	本文主要针对高通量毒理测试方面的应用，提出了一种基于微流控芯片的集成片上
 	自动化线虫操纵、线虫前景轮廓分割、线虫轮廓解析、线虫轮廓跟踪和线虫特征提取等功能的
 	软硬件平台。本文总共分为五章：
 	\begin{enumerate}

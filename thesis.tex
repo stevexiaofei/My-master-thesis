@@ -4,7 +4,7 @@
 %%==================================================
 
 % 双面打印
-\documentclass[master, fontset=adobe,openany, oneside]{sjtuthesis}
+\documentclass[master, fontset=adobe,openany, oneside,review]{sjtuthesis}
 % \documentclass[bachelor, openany, oneside, submit]{sjtuthesis}
 % \documentclass[master, review]{sjtuthesis}
 % \documentclass[%
@@ -25,23 +25,23 @@
 
 % 无编号内容：中英文论文封面、授权页
 \include{tex/id}
-% \maketitle
+\maketitle
 
-% \makeatletter
-% \ifsjtu@submit\relax
-  % \includepdf{pdf/original.pdf}
-  % \cleardoublepage
-  % \includepdf{pdf/authorization.pdf}
-  % \cleardoublepage
-% \else
-% \ifsjtu@review\relax
-% % exclude the original claim and authorization
-% \else
-  % \makeDeclareOriginal
-  % \makeDeclareAuthorization
-% \fi
-% \fi
-% \makeatother
+\makeatletter
+\ifsjtu@submit\relax
+  \includepdf{pdf/original.pdf}
+  \cleardoublepage
+  \includepdf{pdf/authorization.pdf}
+  \cleardoublepage
+\else
+	\ifsjtu@review\relax
+	% exclude the original claim and authorization
+	\else
+	  \makeDeclareOriginal
+	  \makeDeclareAuthorization
+	\fi
+\fi
+\makeatother
 
 \frontmatter % 使用罗马数字对前言编号
 
@@ -95,14 +95,14 @@
 % \ifsjtu@review\relax\else
   % \include{tex/ack}         % 致谢
 % \fi
-% 盲审论文中，发表学术论文及参与科研情况等仅以第几作者注明即可，不要出现作者或他人姓名
-% \ifsjtu@review\relax
-    % \include{tex/pubreview}
-    % \include{tex/projectsreview}  
-% \else
-    % \include{tex/pub}       % 发表论文
-    % \include{tex/projects}  % 参与的项目
-% \fi
+%盲审论文中，发表学术论文及参与科研情况等仅以第几作者注明即可，不要出现作者或他人姓名
+\ifsjtu@review\relax
+    \include{tex/pubreview}
+    %\include{tex/projectsreview}  
+\else
+    \include{tex/pub}       % 发表论文
+    \include{tex/projects}  % 参与的项目
+\fi
 
 
 % \include{tex/patents}     % 申请专利
