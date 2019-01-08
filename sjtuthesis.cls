@@ -60,6 +60,7 @@
 \RequirePackage{etoolbox}
 \RequirePackage[centering,a4paper,body={15cm,22.5cm}]{geometry} %设置版面
 \RequirePackage{fancyhdr}
+%\RequirePackage{setspace}
 
 \RequirePackage{pageslts}
 \RequirePackage[titles]{tocloft}
@@ -171,7 +172,7 @@
     afterskip    = {1.0ex \@plus .2ex},
   },
   subsection={%
-    format       = \zihao{-4}\normalfont,
+    format       = \zihao{-4}\heiti,
     afterindent  = true,
     afterskip    = {1.0ex \@plus .2ex},
   },
@@ -381,7 +382,9 @@
   \begin{center}
   {\songti\zihao{-3}\sjtu@label@statement}
   \vskip\stretch{1}
+  
   {\heiti\zihao{2}\sjtu@value@chinesetitle}
+
   \vskip\stretch{1}
   {\fangsong\zihao{4}}
   \def\tabcolsep{1pt}
@@ -429,7 +432,7 @@
       \vskip \stretch{1}
 	  \def\tabcolsep{0.3cm}
       \def\arraystretch{1.5}
-	  \begin{tabular}{ll}
+	  \begin{tabular}{p{200pt}p{200pt}}
       	\ifsjtu@review
           {\normalfont\zihao{4} \textbf{\sjtu@label@englishauthor}}  & \\
       	  {\normalfont\zihao{4} \textbf{\sjtu@label@englishstudentnumber}}  & \\
